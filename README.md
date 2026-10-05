@@ -1,14 +1,11 @@
-# Meu Diário — IA
+# Meu Diário — MVP v2
 
-MVP de diário alimentar pessoal, pronto para GitHub Pages.
+Inclui dashboard, metas configuráveis, histórico semanal, saldo semanal, exclusão de refeições e comandos básicos no chat.
 
-## O que já funciona
-- Dashboard diário responsivo
-- Registro por linguagem natural
-- Estimativa local para alimentos básicos
-- Cálculo de calorias e macronutrientes
-- Persistência no navegador com localStorage
-- Estrutura pronta para trocar o estimador local por uma API de IA
+## Importante sobre a "IA"
+Esta versão ainda usa um interpretador JavaScript local para reconhecimento inicial. Isso deixa a resposta instantânea e não usa nenhuma API externa.
 
-## Próxima etapa
-Criar um backend seguro para a IA. A chave da API **não deve** ficar no JavaScript publicado pelo GitHub Pages.
+## Próxima arquitetura
+GitHub Pages (frontend) -> backend seguro -> API de IA -> resposta estruturada -> banco do usuário.
+
+Nunca coloque uma chave de API diretamente no `app.js` publicado.

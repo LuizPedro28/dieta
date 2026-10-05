@@ -1,54 +1,9 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#111827">
-  <title>Meu Diário • IA</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main class="app">
-    <header>
-      <div>
-        <p class="eyebrow">MEU DIÁRIO</p>
-        <h1>Alimentação</h1>
-      </div>
-      <button id="todayBtn" class="ghost">Hoje</button>
-    </header>
-
-    <section class="hero card">
-      <div class="heroTop">
-        <div>
-          <span id="dateLabel"></span>
-          <h2><span id="calories">0</span> <small>/ <span id="goal">2100</span> kcal</small></h2>
-        </div>
-        <div class="ring"><span id="percent">0%</span></div>
-      </div>
-      <div class="bar"><i id="progress"></i></div>
-      <div class="macros">
-        <span>Proteína <b id="protein">0g</b></span>
-        <span>Carbo <b id="carbs">0g</b></span>
-        <span>Gordura <b id="fat">0g</b></span>
-      </div>
-    </section>
-
-    <section class="card chat">
-      <div class="sectionTitle"><h3>Fale com seu diário</h3><span>IA</span></div>
-      <div id="messages" class="messages">
-        <div class="bubble ai">Me conte o que você comeu. Ex.: “No almoço comi arroz, feijão, frango e salada.”</div>
-      </div>
-      <form id="chatForm">
-        <input id="input" autocomplete="off" placeholder="Digite sua refeição..." />
-        <button>Registrar</button>
-      </form>
-    </section>
-
-    <section>
-      <div class="sectionTitle"><h3>Hoje</h3><button id="clearBtn" class="textBtn">Limpar</button></div>
-      <div id="meals" class="meals"></div>
-    </section>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>Meu Diário • IA</title><link rel="stylesheet" href="style.css"></head><body><main class="app">
+<header><div><p class="eyebrow">MEU DIÁRIO</p><h1>Alimentação</h1></div><div><button id="weekBtn" class="ghost">Semana</button><button id="settingsBtn" class="ghost">⚙</button></div></header>
+<section class="card hero"><div class="heroTop"><div><span id="dateLabel"></span><h2><span id="calories">0</span> <small>/ <span id="goal">2100</span> kcal</small></h2></div><div class="ring"><span id="percent">0%</span></div></div><div class="bar"><i id="progress"></i></div><div class="macros"><span>Proteína <b id="protein">0g</b></span><span>Carbo <b id="carbs">0g</b></span><span>Gordura <b id="fat">0g</b></span></div></section>
+<section class="card stats"><div><small>MÉDIA SEMANAL</small><b id="weekly">0 kcal/dia</b></div><div><small>DIAS REGISTRADOS</small><b id="logged">0/7 dias</b></div><div><small>SALDO</small><b id="weekBalance">0 kcal</b></div></section>
+<section id="weekPanel" class="card hidden"><div class="sectionTitle"><h3>Minha semana</h3><span id="weekTarget">2100 kcal/dia</span></div><div id="weekList" class="weekList"></div><div class="weekNote">Ajustes automáticos de meta entram na próxima etapa, depois de definirmos suas regras pessoais.</div></section>
+<section class="card chat"><div class="sectionTitle"><h3>Fale com seu diário</h3><span>IA</span></div><div id="messages" class="messages"><div class="bubble ai">Me conte o que você comeu, pergunte quanto falta ou consulte sua semana.</div></div><form id="chatForm"><input id="input" autocomplete="off" placeholder="Ex.: comi 150g de arroz e 2 ovos..." /><button>Registrar</button></form></section>
+<section><div class="sectionTitle"><h3>Hoje</h3><button id="clearBtn" class="textBtn">Limpar</button></div><div id="meals" class="meals"></div></section>
+<section id="settings" class="card settings hidden"><h3>Metas pessoais</h3><label>Calorias <input id="goalInput" type="number" value="2100"></label><label>Proteína (g) <input id="proteinInput" type="number" value="150"></label><label>Carboidratos (g) <input id="carbsInput" type="number" value="220"></label><label>Gorduras (g) <input id="fatInput" type="number" value="70"></label><button id="saveSettings" class="save">Salvar</button></section>
+</main><script src="app.js"></script></body></html>
