@@ -1,9 +1,176 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#111827"><title>Meu Diário • IA</title><link rel="stylesheet" href="style.css"></head><body><main class="app">
-<header><div><p class="eyebrow">MEU DIÁRIO</p><h1>Alimentação</h1></div><div><button id="weekBtn" class="ghost">Semana</button><button id="settingsBtn" class="ghost">⚙</button></div></header>
-<section class="card hero"><div class="heroTop"><div><span id="dateLabel"></span><h2><span id="calories">0</span> <small>/ <span id="goal">2100</span> kcal</small></h2></div><div class="ring"><span id="percent">0%</span></div></div><div class="bar"><i id="progress"></i></div><div class="macros"><span>Proteína <b id="protein">0g</b></span><span>Carbo <b id="carbs">0g</b></span><span>Gordura <b id="fat">0g</b></span></div></section>
-<section class="card stats"><div><small>MÉDIA SEMANAL</small><b id="weekly">0 kcal/dia</b></div><div><small>DIAS REGISTRADOS</small><b id="logged">0/7 dias</b></div><div><small>SALDO</small><b id="weekBalance">0 kcal</b></div></section>
-<section id="weekPanel" class="card hidden"><div class="sectionTitle"><h3>Minha semana</h3><span id="weekTarget">2100 kcal/dia</span></div><div id="weekList" class="weekList"></div><div class="weekNote">Ajustes automáticos de meta entram na próxima etapa, depois de definirmos suas regras pessoais.</div></section>
-<section class="card chat"><div class="sectionTitle"><h3>Fale com seu diário</h3><span>IA</span></div><div id="messages" class="messages"><div class="bubble ai">Me conte o que você comeu, pergunte quanto falta ou consulte sua semana.</div></div><form id="chatForm"><input id="input" autocomplete="off" placeholder="Ex.: comi 150g de arroz e 2 ovos..." /><button>Registrar</button></form></section>
-<section><div class="sectionTitle"><h3>Hoje</h3><button id="clearBtn" class="textBtn">Limpar</button></div><div id="meals" class="meals"></div></section>
-<section id="settings" class="card settings hidden"><h3>Metas pessoais</h3><label>Calorias <input id="goalInput" type="number" value="2100"></label><label>Proteína (g) <input id="proteinInput" type="number" value="150"></label><label>Carboidratos (g) <input id="carbsInput" type="number" value="220"></label><label>Gorduras (g) <input id="fatInput" type="number" value="70"></label><button id="saveSettings" class="save">Salvar</button></section>
-</main><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1411" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Meu Diário • IA</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ CONFIGURAR IA ============ -->
+<main id="auth" class="auth hidden">
+  <div class="authCard">
+    <div class="logo" aria-hidden="true">🥗</div>
+    <h1 class="serif">Meu Diário</h1>
+    <p class="muted">Conte o que você comeu, do seu jeito. A IA cuida das contas.</p>
+    <form id="authForm" autocomplete="off">
+      <label class="field"><span>Chave de API do Google (Gemini)</span><input id="keyInput" type="password" placeholder="AIza..." autocomplete="off" required></label>
+      <button id="loginBtn" type="submit" class="btn primary block">Começar</button>
+      <button id="skipBtn" type="button" class="btn ghost block">Usar sem IA (só manual)</button>
+    </form>
+    <p class="muted small">Crie a chave grátis em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Ela fica salva só neste navegador e é enviada apenas ao Google.</p>
+    <p id="authMsg" class="authMsg" role="status"></p>
+  </div>
+</main>
+
+<!-- ============ APP ============ -->
+<div id="app" class="app hidden">
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="greeting">Olá</p>
+      <div class="dateNav">
+        <button class="iconBtn" id="prevDay" aria-label="Dia anterior">‹</button>
+        <h1 id="dateTitle" class="serif">Hoje</h1>
+        <button class="iconBtn" id="nextDay" aria-label="Próximo dia">›</button>
+      </div>
+    </div>
+    <button id="todayBtn" class="pill hidden">Voltar para hoje</button>
+  </header>
+
+  <!-- HOJE -->
+  <section id="tab-today" class="tab">
+    <div class="card hero">
+      <div class="heroGrid">
+        <div class="ringWrap">
+          <svg viewBox="0 0 120 120" class="ringSvg" aria-hidden="true">
+            <circle class="ringBg" cx="60" cy="60" r="52"/>
+            <circle class="ringFg" id="ringFg" cx="60" cy="60" r="52" pathLength="100"/>
+          </svg>
+          <div class="ringText"><b id="percent">0%</b><span>da meta</span></div>
+        </div>
+        <div class="heroInfo">
+          <div class="bigNum"><span id="calories" class="serif">0</span><small>kcal</small></div>
+          <p id="remaining" class="muted"></p>
+        </div>
+      </div>
+      <div class="macroBars">
+        <div class="macro p"><div class="mTop"><span>Proteína</span><b><i id="protein">0</i>/<i id="proteinGoal">150</i>g</b></div><div class="track"><i id="proteinBar"></i></div></div>
+        <div class="macro c"><div class="mTop"><span>Carbo</span><b><i id="carbs">0</i>/<i id="carbsGoal">220</i>g</b></div><div class="track"><i id="carbsBar"></i></div></div>
+        <div class="macro f"><div class="mTop"><span>Gordura</span><b><i id="fat">0</i>/<i id="fatGoal">70</i>g</b></div><div class="track"><i id="fatBar"></i></div></div>
+      </div>
+    </div>
+
+    <div class="sectionHead"><h2>Refeições</h2><button id="addManual" class="textBtn">+ Manual</button></div>
+    <div id="meals" class="meals"></div>
+  </section>
+
+  <!-- SEMANA -->
+  <section id="tab-week" class="tab hidden">
+    <div class="sectionHead"><h2>Semana</h2>
+      <div class="weekNav"><button class="iconBtn" id="prevWeek" aria-label="Semana anterior">‹</button><span id="weekRange"></span><button class="iconBtn" id="nextWeek" aria-label="Próxima semana">›</button></div>
+    </div>
+    <div class="card">
+      <div id="weekChart" class="weekChart"></div>
+      <p class="muted small center">Toque numa barra para abrir o dia</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><small>Média diária</small><b id="wAvg">0</b><span>kcal</span></div>
+      <div class="stat"><small>Dias registrados</small><b id="wDays">0/7</b><span id="wStreak"></span></div>
+      <div class="stat"><small>Saldo da semana</small><b id="wBalance">0</b><span>kcal vs meta</span></div>
+      <div class="stat"><small>Proteína média</small><b id="wProt">0</b><span>g/dia</span></div>
+    </div>
+    <div class="card insight" id="insight"></div>
+  </section>
+
+  <!-- CHAT -->
+  <section id="tab-chat" class="tab hidden">
+    <div class="sectionHead"><h2>Converse com a IA</h2><span class="badge">IA online</span></div>
+    <div id="messages" class="messages" aria-live="polite"></div>
+    <div id="chips" class="chips"></div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section id="tab-settings" class="tab hidden">
+    <div class="sectionHead"><h2>Ajustes</h2></div>
+    <div class="card form">
+      <h3>Perfil</h3>
+      <label class="row"><span>Seu nome</span><input id="nameInput" type="text" maxlength="30" placeholder="Como te chamo?"></label>
+      <h3>Metas diárias</h3>
+      <label class="row"><span>Calorias (kcal)</span><input id="goalInput" type="number" min="500" max="10000" inputmode="numeric"></label>
+      <label class="row"><span>Proteína (g)</span><input id="proteinInput" type="number" min="0" inputmode="numeric"></label>
+      <label class="row"><span>Carboidratos (g)</span><input id="carbsInput" type="number" min="0" inputmode="numeric"></label>
+      <label class="row"><span>Gorduras (g)</span><input id="fatInput" type="number" min="0" inputmode="numeric"></label>
+      <button id="saveSettings" class="btn primary block">Salvar</button>
+      <p class="muted small">Dica: você também pode pedir no chat — “muda minha meta para 2400 kcal”.</p>
+    </div>
+    <div class="card form">
+      <h3>Aparência</h3>
+      <div class="seg" id="themeSeg"><button data-theme="auto">Auto</button><button data-theme="light">Claro</button><button data-theme="dark">Escuro</button></div>
+    </div>
+    <div class="card form">
+      <h3>IA (Google Gemini)</h3>
+      <label class="row"><span>Chave de API</span><input id="keySetting" type="password" placeholder="AIza..." autocomplete="off"></label>
+      <label class="row"><span>Modelo</span><input id="modelSetting" placeholder="gemini-2.5-flash"></label>
+      <button id="saveKey" class="btn ghost block">Salvar IA</button>
+    </div>
+    <div class="card form">
+      <h3>Seus dados</h3>
+      <p class="muted small">Tudo fica salvo neste navegador. Faça backup de vez em quando (limpar dados do site apaga o diário).</p>
+      <div class="btnRow"><button id="exportJson" class="btn ghost">Exportar JSON</button><button id="exportCsv" class="btn ghost">Exportar CSV</button></div>
+      <button id="importBtn" class="btn ghost block">Importar backup (JSON)</button>
+      <input id="importInput" type="file" accept="application/json" hidden>
+      <button id="clearChat" class="btn ghost block">Limpar conversa com a IA</button>
+      <button id="wipeBtn" class="btn danger block">Apagar todos os dados</button>
+    </div>
+  </section>
+
+  <!-- COMPOSER -->
+  <form id="chatForm" class="composer" autocomplete="off">
+    <div id="attachPreview" class="attachPreview hidden"><img alt="Foto anexada"><button type="button" id="removeAttach" aria-label="Remover foto">×</button></div>
+    <div class="composerRow">
+      <button type="button" id="photoBtn" class="iconBtn round" aria-label="Anexar foto">📷</button>
+      <input id="photoInput" type="file" accept="image/*" hidden>
+      <input id="input" placeholder="O que você comeu? Ex.: 150g de arroz, feijão e 2 bifes" enterkeyhint="send">
+      <button type="button" id="micBtn" class="iconBtn round hidden" aria-label="Falar">🎙</button>
+      <button id="sendBtn" class="send" aria-label="Enviar">↑</button>
+    </div>
+  </form>
+
+  <nav class="nav" aria-label="Navegação">
+    <button data-tab="today" class="on"><i>🍽</i><span>Hoje</span></button>
+    <button data-tab="week"><i>📊</i><span>Semana</span></button>
+    <button data-tab="chat"><i>💬</i><span>Chat</span></button>
+    <button data-tab="settings"><i>⚙️</i><span>Ajustes</span></button>
+  </nav>
+</div>
+
+<!-- Modal editar refeição -->
+<dialog id="mealDialog">
+  <form method="dialog" id="mealForm" class="form">
+    <h3 id="dialogTitle">Editar refeição</h3>
+    <label class="row"><span>Nome</span><input id="mTitle" maxlength="80" required></label>
+    <label class="row"><span>Horário</span><input id="mTime" type="time" required></label>
+    <label class="row"><span>Calorias</span><input id="mCal" type="number" min="0" inputmode="decimal" required></label>
+    <label class="row"><span>Proteína (g)</span><input id="mProt" type="number" min="0" step="0.1" inputmode="decimal"></label>
+    <label class="row"><span>Carbo (g)</span><input id="mCarb" type="number" min="0" step="0.1" inputmode="decimal"></label>
+    <label class="row"><span>Gordura (g)</span><input id="mFat" type="number" min="0" step="0.1" inputmode="decimal"></label>
+    <div id="mFoods" class="foodList"></div>
+    <div class="btnRow"><button type="button" id="mCancel" class="btn ghost">Cancelar</button><button type="submit" class="btn primary">Salvar</button></div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status"></div>
+<script src="app.js"></script>
+</body>
+</html>
