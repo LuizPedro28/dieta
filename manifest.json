@@ -1,0 +1,8 @@
+{
+  "name":"Meu Performance — Treino & Alimentação",
+  "short_name":"Meu Performance",
+  "description":"Diário pessoal integrado de treino e alimentação, com IA e dados locais.",
+  "start_url":"./index.html","scope":"./","id":"./index.html","display":"standalone","orientation":"portrait-primary",
+  "background_color":"#14140f","theme_color":"#14140f","lang":"pt-BR",
+  "icons":[{"src":"icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":"icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":"icons/icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},{"src":"icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]
+}

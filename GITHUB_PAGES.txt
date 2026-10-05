@@ -1,0 +1,1 @@
+Este projeto foi preparado para GitHub Pages. Publique a raiz do repositório pela branch main. A chave Gemini é configurada dentro do app e não deve ser commitada no repositório.

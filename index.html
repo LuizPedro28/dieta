@@ -1,176 +1,1918 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f6f3ee" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1411" media="(prefers-color-scheme: dark)">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#14140f">
+<meta name="description" content="Diário pessoal integrado de treino e alimentação, com IA, dados locais e exportação.">
+<title>Meu Performance • Treino & Alimentação</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon-32.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Meu Diário • IA</title>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LV Tracker">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#e3ab2f;
+  --accent-2:#c98f22;
+  --bg:#14140f;
+  --surface:#1b1b14;
+  --surface-2:#232319;
+  --surface-3:#2b2b1e;
+  --text:#f4f2e6;
+  --muted:#a19c86;
+  --line:#37362a;
+  --success:#7c9a63;
+  --success-ink:#0d130a;
+  --danger:#c1573f;
+  --shadow:0 18px 44px rgba(0,0,0,.38);
+  --radius-m:14px;
+  --font-display:'Oswald',Impact,'Arial Narrow',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+body.light{
+  --bg:#efece0;
+  --surface:#fbfaf3;
+  --surface-2:#f2efe1;
+  --surface-3:#e7e3d2;
+  --text:#1c1b13;
+  --muted:#726e58;
+  --line:#d7d2ba;
+  --shadow:0 14px 30px rgba(30,26,10,.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+body{
+  margin:0;color:var(--text);font-family:var(--font-body);-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(circle at 10% -12%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 34%),
+    radial-gradient(circle at 96% 2%,rgba(107,139,164,.10),transparent 30%),
+    var(--bg);
+}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button{font-family:var(--font-body)}
+.app{max-width:1040px;margin:0 auto;padding-bottom:56px}
+h1,h2,h3,p{margin:0 0 8px}
+.muted{color:var(--muted)}
+.tiny{font-size:10px;color:var(--muted);letter-spacing:.06em}
+.row{display:flex;gap:8px;align-items:center}
+.row.between{justify-content:space-between}
+.row.wrap{flex-wrap:wrap}
+.block{display:block;margin-top:10px}
+
+/* top bar */
+.top{
+  position:sticky;top:0;z-index:15;
+  background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
+  padding:14px 18px 0;
+}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand-id{display:flex;align-items:center;gap:10px}
+.brand-mark{width:26px;height:26px;flex:0 0 auto}
+.brand-title{font-family:var(--font-display);font-size:16px;font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+.brand-title span{color:var(--accent)}
+.brand-sub{font-size:10px;color:var(--muted);letter-spacing:.05em}
+.icon-btn{
+  border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+  border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;line-height:1
+}
+.nav-tabs{display:flex;gap:20px;margin-top:12px}
+.nav-tabs button{
+  background:none;border:none;padding:8px 0 10px;color:var(--muted);cursor:pointer;
+  font-family:var(--font-display);letter-spacing:.03em;font-size:13px;text-transform:uppercase;
+  position:relative
+}
+.nav-tabs button.active{color:var(--text)}
+.nav-tabs button.active:after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+
+main{padding:18px 18px 0}
+.view{display:none}
+.view.active{display:block}
+
+/* day rail */
+.day-rail{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;-webkit-overflow-scrolling:touch}
+.day-tab{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--muted);
+  font-family:var(--font-display);font-size:13px;letter-spacing:.03em;text-transform:uppercase;
+  padding:10px 16px;border-radius:9px 3px 3px 9px;cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;transition:transform .12s ease
+}
+.day-tab:hover{transform:translateY(-1px)}
+.day-tab.active{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#1a1408;border-color:transparent;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 30%,transparent)
+}
+.day-tab-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.65}
+
+/* hero */
+.hero{
+  background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:4px 16px 16px 4px;padding:20px 22px;margin-bottom:14px
+}
+.hero h1{font-family:var(--font-display);text-transform:uppercase;font-weight:600;font-size:clamp(21px,4.4vw,30px);margin:2px 0 4px}
+.rest-badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  padding:4px 10px;border-radius:999px;background:var(--surface-3);color:var(--muted);border:1px solid var(--line);margin-bottom:8px
+}
+.last-session{font-size:12px;margin:2px 0 0}
+.actions-row{margin-top:14px}
+
+/* buttons */
+button{
+  border:1px solid var(--line);border-radius:9px;padding:10px 14px;background:var(--surface-2);
+  color:var(--text);cursor:pointer;font-size:13px;transition:transform .12s ease,border-color .12s ease
+}
+button:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+button.primary{
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;color:#1a1408;font-weight:600;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 25%,transparent)
+}
+button.green{background:var(--success);color:var(--success-ink);border-color:transparent;font-weight:600}
+button.danger{background:color-mix(in srgb,var(--danger) 16%,var(--surface-2));color:#ff9d86;border-color:color-mix(in srgb,var(--danger) 35%,var(--line))}
+button.ghost{background:transparent}
+button.full{width:100%;margin-top:8px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.actions button{font-size:12px}
+
+/* cards */
+.card{
+  background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line);
+  border-radius:4px 14px 14px 14px;padding:16px 18px;margin-bottom:12px
+}
+.empty-state{text-align:center;padding:34px 18px}
+.empty-icon{font-size:26px;margin-bottom:6px}
+
+/* exercise cards + set grid */
+.ex{padding:16px 18px}
+.exercise-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.exercise-name{font-size:15px;font-weight:700}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:var(--surface-3);color:var(--muted);font-size:10px;margin-top:4px}
+.guide-btn{font-size:12px;flex:0 0 auto}
+.set-labels{
+  display:grid;grid-template-columns:26px 1fr 1fr 60px 40px;gap:8px;margin-top:12px;padding-bottom:6px;
+  font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--line)
+}
+.set{display:grid;grid-template-columns:26px 1fr 1fr 60px 40px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.set-index{font-family:var(--font-body);font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px}
+.set input{
+  width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;
+  padding:6px 2px;color:var(--text);outline:none;font-variant-numeric:tabular-nums;font-size:14px
+}
+.set input:focus{border-color:var(--accent)}
+.set input::placeholder{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+.ok{width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.ok.on{background:var(--success);color:var(--success-ink);border-color:transparent}
+
+/* history */
+.log-card b{font-size:14px}
+.log-rows{margin-top:4px;font-size:13px}
+.log-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.log-row:last-child{border-bottom:none}
+
+/* library */
+.search-input{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:11px 13px;outline:none;font-size:14px
+}
+.search-input:focus{border-color:var(--accent)}
+.library-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}
+.chart-svg{width:100%;height:150px;display:block;margin-top:10px}
+.chart-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-top:10px}
+.chart-stats div{background:var(--surface-2);border-radius:10px;padding:8px 10px}
+.chart-dates{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px}
+.pos{color:var(--success)}
+.neg{color:var(--danger)}
+.rating-stars{display:inline-flex;gap:1px}
+.star-btn{background:none;border:none;padding:2px;font-size:19px;line-height:1;color:var(--line);cursor:pointer}
+.star-btn.on{color:var(--accent)}
+.delta-badge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 9px;background:var(--surface-3);font-size:10px}
+.delta-badge.pos{color:var(--success)}
+.delta-badge.neg{color:var(--danger)}
+
+/* assistente de IA */
+.ai-chat-card{display:flex;flex-direction:column}
+.ai-messages{display:flex;flex-direction:column;gap:10px;max-height:56vh;overflow-y:auto;padding:2px}
+.ai-msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:14px;line-height:1.5}
+.ai-msg-text{white-space:pre-wrap}
+.ai-user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#1a1408;border-radius:14px 14px 4px 14px}
+.ai-assistant{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line);border-radius:14px 14px 14px 4px}
+.ai-msg-img{max-width:100%;border-radius:10px;display:block;margin-bottom:6px}
+.ai-image-preview{display:flex;align-items:center;gap:8px;margin-top:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:6px}
+.ai-image-preview img{width:52px;height:52px;object-fit:cover;border-radius:7px}
+.ai-image-preview button{padding:6px 10px;font-size:12px}
+.ai-input-row{display:flex;align-items:flex-end;gap:8px;margin-top:12px}
+.ai-input-row textarea{
+  flex:1;resize:none;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  border-radius:10px;padding:10px 12px;font-family:var(--font-body);font-size:14px;outline:none;max-height:120px
+}
+.ai-input-row textarea:focus{border-color:var(--accent)}
+.lib-desc{margin-top:8px;font-size:12px}
+
+/* config */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-2 label,label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.grid-2 input,.grid-2 select,#rir{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);
+  border-radius:9px;padding:10px;font-size:14px;outline:none
+}
+.grid-2 input:focus,.grid-2 select:focus,#rir:focus{border-color:var(--accent)}
+.field-input{width:100%;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:10px;font-size:14px;outline:none;margin-top:2px}
+.field-input:focus{border-color:var(--accent)}
+.theme-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}
+.theme-swatch{
+  min-height:56px;border-radius:10px;border:2px solid var(--line);cursor:pointer;position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;justify-content:flex-start;padding:6px 8px;
+  font-family:var(--font-display);font-size:10px;letter-spacing:.03em;color:#1a1408;text-transform:uppercase
+}
+.theme-swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--accent)}
+.swatch-latao{background:radial-gradient(circle at 30% 25%,#f4d27e,#c98f22 72%)}
+.swatch-ferro{background:radial-gradient(circle at 30% 25%,#a3c3d8,#4f6b80 72%)}
+.swatch-ferrugem{background:radial-gradient(circle at 30% 25%,#e6947c,#9c3f2c 72%)}
+.swatch-oliva{background:radial-gradient(circle at 30% 25%,#bccb96,#5f7145 72%)}
+.swatch-grafite{background:radial-gradient(circle at 30% 25%,#d3d0bd,#726f5c 72%)}
+.info-list{display:grid;gap:8px;margin-top:10px}
+.info-item{padding:11px 12px;background:var(--surface-2);border-radius:11px;border:1px solid var(--line);font-size:13px}
+.section-title{margin:16px 0 8px;font-family:var(--font-display);font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+
+/* modals */
+.modal{display:none;position:fixed;inset:0;background:rgba(6,6,3,.7);backdrop-filter:blur(6px);z-index:30;padding:14px;overflow:auto}
+.modal.open{display:block}
+.modalbox{max-width:720px;margin:26px auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:var(--shadow)}
+.edit-row{border-top:1px solid var(--line);padding:12px 0}
+.edit-row:first-child{border-top:none}
+.edit-grid{display:grid;grid-template-columns:1fr 72px 40px;gap:6px;margin-top:6px}
+.edit-grid select,.edit-grid input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px}
+.ex-pick-btn{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px;text-align:left;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.picker-list{max-height:52vh;overflow-y:auto;display:grid;gap:6px}
+.picker-item{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--surface-2);border-radius:10px}
+.picker-item:hover{border-color:var(--accent)}
+.picker-item-name{font-weight:700;font-size:13px}
+.picker-item-meta{font-size:11px}
+.day-edit-row{display:grid;grid-template-columns:34px 1fr 40px;gap:10px;align-items:start;border-top:1px solid var(--line);padding:14px 0}
+.day-edit-row:first-child{border-top:none}
+.day-edit-order{display:flex;flex-direction:column;gap:4px}
+.day-edit-order button{padding:4px;width:32px;height:26px;font-size:11px}
+.day-edit-fields{display:grid;grid-template-columns:90px 1fr;gap:6px}
+.day-edit-fields .de-name,.day-edit-fields .de-sub{grid-column:1/-1}
+.day-edit-fields input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px;font-size:13px}
+.de-rest{grid-column:1/-1;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-top:2px}
+.de-rest input{width:auto}
+
+/* toast */
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);opacity:0;pointer-events:none;
+  background:var(--surface-3);border:1px solid var(--line);color:var(--text);padding:11px 18px;border-radius:999px;
+  font-size:13px;box-shadow:var(--shadow);transition:opacity .18s ease,transform .18s ease;z-index:40
+}
+.toast.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+
+/* timer flutuante */
+.timer-widget{position:fixed;right:16px;bottom:16px;z-index:35;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.timer-fab{
+  width:58px;height:58px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));border:none;color:#1a1408;font-weight:700;
+  font-size:13px;font-variant-numeric:tabular-nums;box-shadow:0 10px 26px color-mix(in srgb,var(--accent) 40%,transparent);
+}
+.timer-fab.running{animation:timer-pulse 1.6s ease-in-out infinite}
+@keyframes timer-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.timer-panel{
+  display:none;width:min(300px,84vw);background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  padding:16px;box-shadow:var(--shadow)
+}
+.timer-panel.open{display:block}
+.timer-display{
+  font-family:var(--font-display);font-size:44px;text-align:center;letter-spacing:.03em;margin:10px 0;
+  font-variant-numeric:tabular-nums;color:var(--accent)
+}
+.timer-presets{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.timer-presets button{padding:8px 2px;font-size:11px}
+.timer-note{font-size:11px;margin-top:10px;line-height:1.5}
+
+@media(max-width:760px){
+  .library-grid{grid-template-columns:1fr}
+  .theme-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:560px){
+  main{padding:14px 12px 0}
+  .top{padding:12px 12px 0}
+  .hero{padding:16px}
+  .exercise-top{flex-direction:column}
+  .set,.set-labels{grid-template-columns:22px 1fr 1fr 52px 36px}
+  .grid-2{grid-template-columns:1fr}
+  .day-edit-fields{grid-template-columns:1fr}
+}
+
+/* ===== MÓDULO DE ALIMENTAÇÃO INTEGRADO ===== */
+.nut-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:12px}
+.nut-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.nut-hero{display:grid;grid-template-columns:130px 1fr;gap:18px;align-items:center}
+.nut-ring{width:126px;height:126px;position:relative}.nut-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.nut-ring circle{fill:none;stroke-width:9}.nut-ring .bg{stroke:var(--surface-3)}.nut-ring .fg{stroke:var(--accent);stroke-linecap:round;transition:.25s}
+.nut-ring.over .fg{stroke:var(--danger)}.nut-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}.nut-ring-text b{font-size:22px}.nut-ring-text span{font-size:10px;color:var(--muted)}
+.nut-kcal{font-family:var(--font-display);font-size:42px;line-height:1}.nut-kcal small{font-family:var(--font-body);font-size:12px;color:var(--muted)}
+.nut-macros{display:grid;gap:9px;margin-top:16px}.nut-mtop{display:flex;justify-content:space-between;font-size:12px}.nut-track{height:7px;background:var(--surface-3);border-radius:99px;overflow:hidden}.nut-track i{display:block;height:100%;width:0;border-radius:99px;background:var(--accent)}
+.nut-section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px}.nut-section-head h2{font-size:18px}
+.nut-meal{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 14px;margin-bottom:8px}.nut-meal-top{display:grid;grid-template-columns:50px 1fr auto;gap:10px;align-items:start}.nut-time{color:var(--muted);font-variant-numeric:tabular-nums}.nut-main b{font-size:14px}.nut-foods{margin:4px 0 0;color:var(--muted);font-size:11px}.nut-kcal-mini{text-align:right}.nut-kcal-mini strong{font-size:16px}.nut-kcal-mini small{display:block;color:var(--muted);font-size:9px}.nut-macros-row{display:flex;gap:6px;align-items:center;margin-top:9px;flex-wrap:wrap}.nut-pill{padding:4px 7px;border-radius:99px;background:var(--surface-2);font-size:10px}.nut-actions{margin-left:auto;display:flex;gap:4px}.nut-actions button{padding:4px 7px;font-size:11px}.nut-low{color:var(--danger)}
+.nut-empty{text-align:center;padding:28px 12px;color:var(--muted);background:var(--surface);border:1px dashed var(--line);border-radius:12px}
+.nut-week-svg{width:100%;height:160px;display:block}.nut-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.nut-stat{background:var(--surface-2);border-radius:10px;padding:10px}.nut-stat small{display:block;color:var(--muted);font-size:10px}.nut-stat b{display:block;font-size:18px;margin-top:3px}.nut-stat span{font-size:9px;color:var(--muted)}
+.nut-chat{display:flex;flex-direction:column;min-height:420px}.nut-messages{display:flex;flex-direction:column;gap:9px;max-height:54vh;overflow:auto;padding:4px}.nut-msg{max-width:88%;padding:10px 12px;border-radius:13px;font-size:13px;line-height:1.45;white-space:pre-wrap}.nut-msg.user{align-self:flex-end;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#1a1408}.nut-msg.ai{align-self:flex-start;background:var(--surface-2);border:1px solid var(--line)}.nut-msg img{max-width:100%;border-radius:9px;display:block;margin-bottom:6px}.nut-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.nut-chips button{font-size:10px}.nut-composer{display:flex;gap:7px;margin-top:10px}.nut-composer input{flex:1;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px;outline:none}.nut-composer input:focus{border-color:var(--accent)}
+.nut-dialog{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:14px;padding:18px;width:min(520px,calc(100% - 24px));box-shadow:var(--shadow)}.nut-dialog::backdrop{background:rgba(0,0,0,.62)}
+.nut-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.nut-form-grid label{color:var(--muted);font-size:11px}.nut-form-grid input{width:100%;margin-top:4px;background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px;outline:none}
+.nut-tools{display:flex;gap:7px;flex-wrap:wrap}.nut-day-nav{display:flex;align-items:center;gap:5px}.nut-day-nav h1{font-family:var(--font-display);font-size:24px;margin:0;min-width:100px;text-align:center}.nut-ai-badge{display:inline-flex;padding:4px 8px;border-radius:99px;background:var(--surface-2);color:var(--muted);font-size:10px}
+@media(max-width:760px){.nut-grid{grid-template-columns:1fr}.nut-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.nut-hero{grid-template-columns:105px 1fr;gap:10px}.nut-ring{width:104px;height:104px}.nut-kcal{font-size:34px}.nut-meal-top{grid-template-columns:42px 1fr auto}.nut-form-grid{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-<!-- ============ CONFIGURAR IA ============ -->
-<main id="auth" class="auth hidden">
-  <div class="authCard">
-    <div class="logo" aria-hidden="true">🥗</div>
-    <h1 class="serif">Meu Diário</h1>
-    <p class="muted">Conte o que você comeu, do seu jeito. A IA cuida das contas.</p>
-    <form id="authForm" autocomplete="off">
-      <label class="field"><span>Chave de API do Google (Gemini)</span><input id="keyInput" type="password" placeholder="AIza..." autocomplete="off" required></label>
-      <button id="loginBtn" type="submit" class="btn primary block">Começar</button>
-      <button id="skipBtn" type="button" class="btn ghost block">Usar sem IA (só manual)</button>
-    </form>
-    <p class="muted small">Crie a chave grátis em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>. Ela fica salva só neste navegador e é enviada apenas ao Google.</p>
-    <p id="authMsg" class="authMsg" role="status"></p>
+<div class="app">
+<header class="top">
+  <div class="brand">
+    <div class="brand-id">
+      <svg class="brand-mark" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="13" cy="13" r="11" stroke="var(--accent)" stroke-width="2.4"/>
+        <rect x="4" y="11.5" width="18" height="3" rx="1.5" fill="var(--accent)"/>
+      </svg>
+      <div>
+        <div class="brand-title">MEU <span>PERFORMANCE</span></div>
+        <div class="brand-sub">Treino · alimentação · IA · tudo local</div>
+      </div>
+    </div>
+    <button type="button" class="icon-btn" onclick="showView('config')" aria-label="Configurações">⚙</button>
   </div>
-</main>
+  <div class="nav-tabs">
+    <button type="button" data-view="treino" class="active" onclick="showView('treino',this)">Treino</button>
+    <button type="button" data-view="nutricao" onclick="showView('nutricao',this)">Alimentação</button>
+    <button type="button" data-view="historico" onclick="showView('historico',this)">Histórico</button>
+    <button type="button" data-view="exercicios" onclick="showView('exercicios',this)">Exercícios</button>
+    <button type="button" data-view="ia" onclick="showView('ia',this)">IA</button>
+    <button type="button" data-view="config" onclick="showView('config',this)">Config.</button>
+  </div>
+</header>
+<main>
 
-<!-- ============ APP ============ -->
-<div id="app" class="app hidden">
-  <header class="top">
+<section id="treino" class="view active">
+  <div class="day-rail" id="dayRail"></div>
+  <div class="hero">
+    <span class="rest-badge" id="restBadge" style="display:none">Dia de descanso</span>
+    <h1 id="title"></h1>
+    <p id="sub" class="muted"></p>
+    <p id="lastSession" class="muted last-session" style="display:none"></p>
+    <div class="row" id="gymRow" style="margin-top:10px;gap:6px">
+      <select id="gymSelect" class="field-input" style="flex:1" onchange="onGymSelectChange()"></select>
+      <button type="button" class="icon-btn" onclick="removeCurrentGym()" aria-label="Remover academia da lista" title="Remover academia da lista">🗑</button>
+    </div>
+    <div class="row" id="ratingRow" style="margin-top:10px;gap:6px;align-items:center">
+      <span class="muted tiny">Nota do treino:</span>
+      <span id="ratingStars" class="rating-stars"></span>
+    </div>
+    <div class="row wrap actions-row">
+      <button type="button" id="editExBtn" onclick="openExerciseEditor()">Editar exercícios</button>
+      <button type="button" id="addExBtn" onclick="quickAddExercise()">+ Exercício</button>
+      <button type="button" onclick="openDayEditor()">Editar dias</button>
+      <button type="button" class="green" id="finishBtn" onclick="finishSession()">✓ Finalizar treino</button>
+    </div>
+  </div>
+  <div class="card" id="warmupCard">
+    <b>Aquecimento • Feeder • PAP/PAPE</b>
+    <p class="muted" style="margin-top:6px">Aquecimento: 2–5 min + preparação específica. Feeder: 1–3 séries leves, sem fadiga. PAP/PAPE é opcional e não deve prejudicar a série efetiva. Séries efetivas: normalmente RIR 0–2.</p>
+  </div>
+  <div id="list"></div>
+</section>
+
+
+<section id="nutricao" class="view">
+  <div class="hero">
+    <div class="row between wrap"><div><h1>Alimentação</h1><p class="muted">Seu diário alimentar integrado ao mesmo app, à mesma IA e aos mesmos dados locais.</p></div><span class="nut-ai-badge">IA compartilhada</span></div>
+  </div>
+  <div class="nut-day-nav" style="margin:0 0 10px"><button type="button" onclick="nutPrevDay()">‹</button><h1 id="nutDateTitle">Hoje</h1><button type="button" id="nutNextDay" onclick="nutNextDay()">›</button><button type="button" id="nutTodayBtn" class="ghost" onclick="nutToday()" style="display:none">Hoje</button></div>
+  <div class="nut-grid">
     <div>
-      <p class="eyebrow" id="greeting">Olá</p>
-      <div class="dateNav">
-        <button class="iconBtn" id="prevDay" aria-label="Dia anterior">‹</button>
-        <h1 id="dateTitle" class="serif">Hoje</h1>
-        <button class="iconBtn" id="nextDay" aria-label="Próximo dia">›</button>
-      </div>
-    </div>
-    <button id="todayBtn" class="pill hidden">Voltar para hoje</button>
-  </header>
-
-  <!-- HOJE -->
-  <section id="tab-today" class="tab">
-    <div class="card hero">
-      <div class="heroGrid">
-        <div class="ringWrap">
-          <svg viewBox="0 0 120 120" class="ringSvg" aria-hidden="true">
-            <circle class="ringBg" cx="60" cy="60" r="52"/>
-            <circle class="ringFg" id="ringFg" cx="60" cy="60" r="52" pathLength="100"/>
-          </svg>
-          <div class="ringText"><b id="percent">0%</b><span>da meta</span></div>
-        </div>
-        <div class="heroInfo">
-          <div class="bigNum"><span id="calories" class="serif">0</span><small>kcal</small></div>
-          <p id="remaining" class="muted"></p>
+      <div class="nut-card nut-hero">
+        <div class="nut-ring" id="nutRing"><svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="51"/><circle class="fg" id="nutRingFg" cx="60" cy="60" r="51" pathLength="100"/></svg><div class="nut-ring-text"><b id="nutPercent">0%</b><span>da meta</span></div></div>
+        <div><div class="nut-kcal"><span id="nutCalories">0</span> <small>kcal</small></div><p id="nutRemaining" class="muted"></p>
+          <div class="nut-macros"><div><div class="nut-mtop"><span>Proteína</span><b><span id="nutP">0</span>/<span id="nutPG">150</span>g</b></div><div class="nut-track"><i id="nutPB"></i></div></div><div><div class="nut-mtop"><span>Carboidratos</span><b><span id="nutC">0</span>/<span id="nutCG">220</span>g</b></div><div class="nut-track"><i id="nutCB"></i></div></div><div><div class="nut-mtop"><span>Gorduras</span><b><span id="nutF">0</span>/<span id="nutFG">70</span>g</b></div><div class="nut-track"><i id="nutFB"></i></div></div></div>
         </div>
       </div>
-      <div class="macroBars">
-        <div class="macro p"><div class="mTop"><span>Proteína</span><b><i id="protein">0</i>/<i id="proteinGoal">150</i>g</b></div><div class="track"><i id="proteinBar"></i></div></div>
-        <div class="macro c"><div class="mTop"><span>Carbo</span><b><i id="carbs">0</i>/<i id="carbsGoal">220</i>g</b></div><div class="track"><i id="carbsBar"></i></div></div>
-        <div class="macro f"><div class="mTop"><span>Gordura</span><b><i id="fat">0</i>/<i id="fatGoal">70</i>g</b></div><div class="track"><i id="fatBar"></i></div></div>
+      <div class="nut-section-head"><h2>Refeições</h2><button type="button" class="primary" onclick="nutOpenMeal()">+ Manual</button></div>
+      <div id="nutMeals"></div>
+    </div>
+    <div>
+      <div class="nut-card"><div class="nut-section-head" style="margin-top:0"><h2>Semana</h2><div class="nut-tools"><button type="button" onclick="nutPrevWeek()">‹</button><button type="button" onclick="nutNextWeek()">›</button></div></div><p id="nutWeekRange" class="muted tiny"></p><div id="nutWeekChart"></div><div class="nut-stats"><div class="nut-stat"><small>Média</small><b id="nutWAvg">0</b><span>kcal</span></div><div class="nut-stat"><small>Registrados</small><b id="nutWDays">0/7</b><span>dias</span></div><div class="nut-stat"><small>Saldo</small><b id="nutWBalance">0</b><span>kcal</span></div><div class="nut-stat"><small>Proteína</small><b id="nutWProt">0</b><span>g/dia</span></div></div><p id="nutInsight" class="muted" style="margin-top:12px"></p></div>
+      <div class="nut-card"><div class="nut-section-head" style="margin-top:0"><h2>IA da alimentação</h2><span class="nut-ai-badge">mesma IA do treino</span></div><div id="nutMessages" class="nut-messages"></div><div id="nutChips" class="nut-chips"></div><div class="nut-composer"><button type="button" onclick="document.getElementById('nutPhoto').click()">📷</button><input id="nutInput" placeholder="Ex.: almocei arroz, feijão e 2 bifes"><button type="button" class="primary" onclick="nutSend()">↑</button></div><input id="nutPhoto" type="file" accept="image/*" hidden><p class="tiny muted" style="margin-top:8px">A IA usa a mesma chave/modelo configurados no Assistente de IA do treino. Os dados e a conversa ficam no navegador.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="historico" class="view">
+  <div class="hero"><h1>Histórico</h1><p class="muted">Sessões salvas neste aparelho.</p></div>
+  <div class="card">
+    <h2>Filtrar por academia</h2>
+    <p class="muted">Útil se você treina em mais de um lugar e quer comparar a evolução separadamente.</p>
+    <select id="histGymFilter" class="field-input" onchange="renderHistory()">
+      <option value="">Todas as academias</option>
+    </select>
+  </div>
+  <div class="card">
+    <h2>Evolução por exercício</h2>
+    <select id="chartExerciseSelect" class="search-input" onchange="renderExerciseChart()"></select>
+    <div id="exerciseChartWrap"></div>
+  </div>
+  <div id="hist"></div>
+</section>
+
+<section id="exercicios" class="view">
+  <div class="hero"><h1>Biblioteca</h1><p class="muted">Execução, faixa de repetições e variações.</p></div>
+  <input id="search" class="search-input" placeholder="Buscar por exercício ou músculo..." oninput="renderLibrary()">
+  <div id="libCount" class="muted tiny" style="margin:10px 0 0"></div>
+  <div id="lib"></div>
+</section>
+
+<section id="ia" class="view">
+  <div class="hero"><h1>Assistente de treino</h1><p class="muted">Converse sobre como montar ou ajustar seus treinos. Você também pode enviar uma foto do seu físico para receber feedback focado em treino.</p></div>
+  <div class="card" id="aiKeyWarning" style="display:none">
+    <h2>Configure sua chave de API</h2>
+    <p class="muted">Para usar o assistente, adicione sua própria chave da API da Anthropic em Configurações → Assistente de IA. Ela fica salva só neste navegador.</p>
+    <div class="actions"><button type="button" class="primary" onclick="showView('config')">Ir para Configurações</button></div>
+  </div>
+  <div class="card ai-chat-card">
+    <div id="aiMessages" class="ai-messages"></div>
+    <div id="aiImagePreview" class="ai-image-preview" style="display:none"></div>
+    <div class="ai-input-row">
+      <button type="button" class="icon-btn" onclick="$('aiFileInput').click()" aria-label="Anexar foto">📷</button>
+      <input type="file" id="aiFileInput" accept="image/*" style="display:none">
+      <textarea id="aiInput" rows="1" placeholder="Pergunte sobre seu treino..."></textarea>
+      <button type="button" class="primary" id="aiSendBtn" onclick="sendAiMessage()">Enviar</button>
+    </div>
+    <div class="row between" style="margin-top:8px">
+      <span class="tiny muted">Usa sua própria chave de API. As mensagens ficam salvas só neste navegador.</span>
+      <button type="button" class="ghost" style="font-size:11px" onclick="clearAiChat()">Limpar conversa</button>
+    </div>
+  </div>
+</section>
+
+<section id="config" class="view">
+  <div class="hero"><h1>Configurações</h1><p class="muted">Personalize a aparência e o funcionamento do tracker.</p></div>
+  <div class="card">
+    <h2>Instalar como app</h2>
+    <p class="muted">No Android/Chrome, toque em "Instalar app" abaixo. No iPhone/iPad, use Compartilhar → "Adicionar à Tela de Início" pelo Safari. Depois de instalado, o tracker abre em tela cheia e funciona offline.</p>
+    <div class="actions"><button type="button" id="installBtn" class="primary" style="display:none" onclick="installApp()">⬇ Instalar app</button></div>
+  </div>
+  <div class="card">
+    <h2>Aparência</h2>
+    <p class="muted">Escolha uma cor de destaque e o modo de exibição.</p>
+    <div class="theme-grid">
+      <button type="button" class="theme-swatch swatch-latao" data-theme="latao" onclick="setTheme('latao')">Latão</button>
+      <button type="button" class="theme-swatch swatch-ferro" data-theme="ferro" onclick="setTheme('ferro')">Ferro</button>
+      <button type="button" class="theme-swatch swatch-ferrugem" data-theme="ferrugem" onclick="setTheme('ferrugem')">Ferrugem</button>
+      <button type="button" class="theme-swatch swatch-oliva" data-theme="oliva" onclick="setTheme('oliva')">Oliva</button>
+      <button type="button" class="theme-swatch swatch-grafite" data-theme="grafite" onclick="setTheme('grafite')">Grafite</button>
+    </div>
+    <div class="actions"><button type="button" onclick="toggleLight()">☀ Alternar claro/escuro</button></div>
+  </div>
+  <div class="card">
+    <h2>Preferências</h2>
+    <div class="grid-2">
+      <label>Nome<input id="name" placeholder="Ex.: Luiz"></label>
+      <label>Unidade<select id="unit"><option value="kg">kg</option><option value="lb">lb</option></select></label>
+    </div>
+    <label class="block">RIR padrão<input id="rir" type="number" min="0" max="5"></label>
+    <div class="actions">
+      <button type="button" class="primary" onclick="saveSettings()">💾 Salvar preferências</button>
+      <button type="button" class="danger" onclick="resetAll()">🗑 Apagar todos os dados</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Dados locais • backup completo</h2>
+    <p class="muted">Um único arquivo contém treino, histórico, alimentação, metas, configurações e conversas. Você pode levar esse JSON para outro lugar, fazer backup ou importar de volta.</p>
+    <div class="actions"><button type="button" class="primary" onclick="exportUnifiedData()">⬇ Exportar tudo (JSON)</button><button type="button" onclick="exportNutritionCsv()">CSV alimentação</button><button type="button" onclick="exportTrainingCsv()">CSV treinos</button><button type="button" onclick="document.getElementById('unifiedImport').click()">⬆ Importar tudo</button><input id="unifiedImport" type="file" accept="application/json" style="display:none"></div>
+    <p class="tiny muted" style="margin-top:8px">A chave de API não é incluída no backup por segurança.</p>
+  </div>
+  <div class="card">
+    <h2>Avaliação física</h2>
+    <p class="muted">Usado para calcular seu IMC e dar mais contexto ao assistente de IA. Fica salvo só neste navegador.</p>
+    <div class="grid-2">
+      <label>Peso (kg)<input id="weightKg" type="number" step="0.1" min="0"></label>
+      <label>Altura (cm)<input id="heightCm" type="number" step="1" min="0"></label>
+    </div>
+    <div class="actions"><button type="button" class="primary" onclick="saveBodySettings()">💾 Salvar</button></div>
+    <div id="bmiResult" class="info-item" style="margin-top:12px;display:none"></div>
+  </div>
+  <div class="card">
+    <h2>Assistente de IA</h2>
+    <p class="muted">O assistente chama a API de IA <b>direto do seu navegador, com a sua própria chave</b> — ela fica salva só neste aparelho (localStorage) e nunca passa por nenhum outro servidor além do provedor escolhido.</p>
+    <div class="info-list" style="margin:10px 0">
+      <div class="info-item"><b>Google Gemini — grátis</b><br><span class="muted">Tem um nível gratuito de verdade, sem cartão de crédito, com limite generoso pra uso pessoal. Recomendado. Crie a chave em <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</span></div>
+      <div class="info-item"><b>Anthropic Claude — pago</b><br><span class="muted">Dá US$5 de crédito só na criação da conta (expira em cerca de 30 dias); depois disso é cobrado por uso. Crie em <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>.</span></div>
+    </div>
+    <label>Provedor<select id="aiProvider" class="field-input" onchange="onAiProviderChange()">
+      <option value="gemini">Google Gemini (grátis)</option>
+      <option value="anthropic">Anthropic Claude (pago)</option>
+    </select></label>
+    <div id="aiGeminiFields">
+      <label class="block">Chave da API do Gemini<input id="aiKeyGemini" class="field-input" type="password" placeholder="AIza..." autocomplete="off"></label>
+      <div class="actions" style="margin-top:8px">
+        <button type="button" id="testGeminiBtn" onclick="testGeminiKey()">🔎 Testar chave e buscar modelos</button>
       </div>
+      <p id="aiTestResult" class="muted" style="font-size:12px;margin-top:8px"></p>
+      <label class="block">Modelo<select id="aiModelGemini" class="field-input" onchange="onGeminiModelChange()">
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (recomendado)</option>
+        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (mais rápido)</option>
+        <option value="custom">Outro (digitar o nome do modelo)</option>
+      </select></label>
+      <input id="aiModelGeminiCustom" class="field-input" style="display:none;margin-top:6px" placeholder="ex.: gemini-3.5-flash">
+      <p class="muted" style="font-size:11px;margin-top:6px">Os modelos do Google mudam de nome com frequência. Clique em "Testar chave e buscar modelos" para ver a lista real e atual disponível para a sua chave — é mais confiável do que confiar nesta lista fixa. O app também tenta se recuperar sozinho durante a conversa se o modelo escolhido parar de funcionar.</p>
     </div>
+    <div id="aiAnthropicFields" style="display:none">
+      <label class="block">Chave da API da Anthropic<input id="aiKeyAnthropic" class="field-input" type="password" placeholder="sk-ant-..." autocomplete="off"></label>
+      <label class="block">Modelo<select id="aiModelAnthropic" class="field-input">
+        <option value="claude-sonnet-5">Sonnet — melhor qualidade</option>
+        <option value="claude-haiku-4-5-20251001">Haiku — mais rápido e barato</option>
+      </select></label>
+    </div>
+    <div class="actions"><button type="button" class="primary" onclick="saveAiSettings()">💾 Salvar</button></div>
+  </div>
+  <div class="card">
+    <h2>Como funciona</h2>
+    <div class="info-list">
+      <div class="info-item"><b>Dias de treino</b><br><span class="muted">Use "Editar dias" para renomear, reordenar, adicionar ou remover dias — inclusive marcar algum como descanso.</span></div>
+      <div class="info-item"><b>Exercícios</b><br><span class="muted">Use "Editar exercícios" para trocar os exercícios de um dia (com busca) ou ajustar o número de séries (até 8).</span></div>
+      <div class="info-item"><b>Registro</b><br><span class="muted">Carga, reps e RIR ficam salvos automaticamente como rascunho enquanto você treina, usando localStorage.</span></div>
+      <div class="info-item"><b>Finalização</b><br><span class="muted">Ao finalizar, as séries preenchidas ou marcadas entram no histórico e o rascunho é limpo para a próxima vez.</span></div>
+      <div class="info-item"><b>Evolução</b><br><span class="muted">Em Histórico, escolha um exercício para ver o gráfico de carga e a % de evolução desde o treino anterior.</span></div>
+      <div class="info-item"><b>Academia</b><br><span class="muted">Escolha onde está treinando na tela de Treino. Em Histórico, filtre por academia para comparar a evolução separadamente.</span></div>
+      <div class="info-item"><b>Nota do treino</b><br><span class="muted">Dê de 1 a 5 estrelas antes de finalizar a sessão — fica salva junto no histórico.</span></div>
+      <div class="info-item"><b>Biblioteca</b><br><span class="muted">150 exercícios com grupo muscular, faixa de repetições, execução detalhada e variações — com busca.</span></div>
+      <div class="info-item"><b>Assistente de IA</b><br><span class="muted">Converse e envie fotos do físico para receber sugestões de treino, usando sua própria chave de API.</span></div>
+      <div class="info-item"><b>Dados locais</b><br><span class="muted">Tudo fica salvo neste navegador via localStorage — não há conta nem servidor.</span></div>
+    </div>
+  </div>
+</section>
 
-    <div class="sectionHead"><h2>Refeições</h2><button id="addManual" class="textBtn">+ Manual</button></div>
-    <div id="meals" class="meals"></div>
-  </section>
-
-  <!-- SEMANA -->
-  <section id="tab-week" class="tab hidden">
-    <div class="sectionHead"><h2>Semana</h2>
-      <div class="weekNav"><button class="iconBtn" id="prevWeek" aria-label="Semana anterior">‹</button><span id="weekRange"></span><button class="iconBtn" id="nextWeek" aria-label="Próxima semana">›</button></div>
-    </div>
-    <div class="card">
-      <div id="weekChart" class="weekChart"></div>
-      <p class="muted small center">Toque numa barra para abrir o dia</p>
-    </div>
-    <div class="stats">
-      <div class="stat"><small>Média diária</small><b id="wAvg">0</b><span>kcal</span></div>
-      <div class="stat"><small>Dias registrados</small><b id="wDays">0/7</b><span id="wStreak"></span></div>
-      <div class="stat"><small>Saldo da semana</small><b id="wBalance">0</b><span>kcal vs meta</span></div>
-      <div class="stat"><small>Proteína média</small><b id="wProt">0</b><span>g/dia</span></div>
-    </div>
-    <div class="card insight" id="insight"></div>
-  </section>
-
-  <!-- CHAT -->
-  <section id="tab-chat" class="tab hidden">
-    <div class="sectionHead"><h2>Converse com a IA</h2><span class="badge">IA online</span></div>
-    <div id="messages" class="messages" aria-live="polite"></div>
-    <div id="chips" class="chips"></div>
-  </section>
-
-  <!-- AJUSTES -->
-  <section id="tab-settings" class="tab hidden">
-    <div class="sectionHead"><h2>Ajustes</h2></div>
-    <div class="card form">
-      <h3>Perfil</h3>
-      <label class="row"><span>Seu nome</span><input id="nameInput" type="text" maxlength="30" placeholder="Como te chamo?"></label>
-      <h3>Metas diárias</h3>
-      <label class="row"><span>Calorias (kcal)</span><input id="goalInput" type="number" min="500" max="10000" inputmode="numeric"></label>
-      <label class="row"><span>Proteína (g)</span><input id="proteinInput" type="number" min="0" inputmode="numeric"></label>
-      <label class="row"><span>Carboidratos (g)</span><input id="carbsInput" type="number" min="0" inputmode="numeric"></label>
-      <label class="row"><span>Gorduras (g)</span><input id="fatInput" type="number" min="0" inputmode="numeric"></label>
-      <button id="saveSettings" class="btn primary block">Salvar</button>
-      <p class="muted small">Dica: você também pode pedir no chat — “muda minha meta para 2400 kcal”.</p>
-    </div>
-    <div class="card form">
-      <h3>Aparência</h3>
-      <div class="seg" id="themeSeg"><button data-theme="auto">Auto</button><button data-theme="light">Claro</button><button data-theme="dark">Escuro</button></div>
-    </div>
-    <div class="card form">
-      <h3>IA (Google Gemini)</h3>
-      <label class="row"><span>Chave de API</span><input id="keySetting" type="password" placeholder="AIza..." autocomplete="off"></label>
-      <label class="row"><span>Modelo</span><input id="modelSetting" placeholder="gemini-2.5-flash"></label>
-      <button id="saveKey" class="btn ghost block">Salvar IA</button>
-    </div>
-    <div class="card form">
-      <h3>Seus dados</h3>
-      <p class="muted small">Tudo fica salvo neste navegador. Faça backup de vez em quando (limpar dados do site apaga o diário).</p>
-      <div class="btnRow"><button id="exportJson" class="btn ghost">Exportar JSON</button><button id="exportCsv" class="btn ghost">Exportar CSV</button></div>
-      <button id="importBtn" class="btn ghost block">Importar backup (JSON)</button>
-      <input id="importInput" type="file" accept="application/json" hidden>
-      <button id="clearChat" class="btn ghost block">Limpar conversa com a IA</button>
-      <button id="wipeBtn" class="btn danger block">Apagar todos os dados</button>
-    </div>
-  </section>
-
-  <!-- COMPOSER -->
-  <form id="chatForm" class="composer" autocomplete="off">
-    <div id="attachPreview" class="attachPreview hidden"><img alt="Foto anexada"><button type="button" id="removeAttach" aria-label="Remover foto">×</button></div>
-    <div class="composerRow">
-      <button type="button" id="photoBtn" class="iconBtn round" aria-label="Anexar foto">📷</button>
-      <input id="photoInput" type="file" accept="image/*" hidden>
-      <input id="input" placeholder="O que você comeu? Ex.: 150g de arroz, feijão e 2 bifes" enterkeyhint="send">
-      <button type="button" id="micBtn" class="iconBtn round hidden" aria-label="Falar">🎙</button>
-      <button id="sendBtn" class="send" aria-label="Enviar">↑</button>
-    </div>
-  </form>
-
-  <nav class="nav" aria-label="Navegação">
-    <button data-tab="today" class="on"><i>🍽</i><span>Hoje</span></button>
-    <button data-tab="week"><i>📊</i><span>Semana</span></button>
-    <button data-tab="chat"><i>💬</i><span>Chat</span></button>
-    <button data-tab="settings"><i>⚙️</i><span>Ajustes</span></button>
-  </nav>
+</main>
 </div>
 
-<!-- Modal editar refeição -->
-<dialog id="mealDialog">
-  <form method="dialog" id="mealForm" class="form">
-    <h3 id="dialogTitle">Editar refeição</h3>
-    <label class="row"><span>Nome</span><input id="mTitle" maxlength="80" required></label>
-    <label class="row"><span>Horário</span><input id="mTime" type="time" required></label>
-    <label class="row"><span>Calorias</span><input id="mCal" type="number" min="0" inputmode="decimal" required></label>
-    <label class="row"><span>Proteína (g)</span><input id="mProt" type="number" min="0" step="0.1" inputmode="decimal"></label>
-    <label class="row"><span>Carbo (g)</span><input id="mCarb" type="number" min="0" step="0.1" inputmode="decimal"></label>
-    <label class="row"><span>Gordura (g)</span><input id="mFat" type="number" min="0" step="0.1" inputmode="decimal"></label>
-    <div id="mFoods" class="foodList"></div>
-    <div class="btnRow"><button type="button" id="mCancel" class="btn ghost">Cancelar</button><button type="submit" class="btn primary">Salvar</button></div>
-  </form>
-</dialog>
+<div class="modal" id="editModal">
+  <div class="modalbox">
+    <div class="row between"><h2>Editar exercícios</h2><button type="button" class="icon-btn" onclick="closeM('editModal')" aria-label="Fechar">✕</button></div>
+    <p class="muted">Troque exercícios e ajuste o número de séries (máx. 8 por exercício).</p>
+    <div id="editList"></div>
+    <button type="button" class="ghost full" onclick="openPicker('new-editor')">+ Adicionar exercício</button>
+    <button type="button" class="primary full" onclick="saveExerciseEditor()">Salvar alterações</button>
+  </div>
+</div>
 
-<div id="toast" class="toast" role="status"></div>
-<script src="app.js"></script>
+<div class="modal" id="pickerModal">
+  <div class="modalbox">
+    <div class="row between"><h2>Escolher exercício</h2><button type="button" class="icon-btn" onclick="closeM('pickerModal')" aria-label="Fechar">✕</button></div>
+    <input id="pickerSearch" class="search-input" placeholder="Buscar por nome ou grupo muscular...">
+    <div id="pickerCount" class="muted tiny" style="margin:8px 0"></div>
+    <div id="pickerList" class="picker-list"></div>
+  </div>
+</div>
+
+<div class="modal" id="dayModal">
+  <div class="modalbox">
+    <div class="row between"><h2>Editar dias</h2><button type="button" class="icon-btn" onclick="closeM('dayModal')" aria-label="Fechar">✕</button></div>
+    <p class="muted">Renomeie, reordene, adicione ou remova dias. Marque "Dia de descanso" quando não houver exercícios.</p>
+    <div id="dayEditList"></div>
+    <button type="button" class="ghost full" onclick="addDay()">+ Novo dia</button>
+    <button type="button" class="primary full" onclick="saveDayEditor()">Salvar dias</button>
+  </div>
+</div>
+
+<div class="modal" id="guideModal">
+  <div class="modalbox">
+    <div class="row between"><h2 id="guideTitle"></h2><button type="button" class="icon-btn" onclick="closeM('guideModal')" aria-label="Fechar">✕</button></div>
+    <div id="guideBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="timer-widget">
+  <div class="timer-panel" id="timerPanel">
+    <div class="row between"><h2 style="margin:0">Timer de descanso</h2><button type="button" class="icon-btn" onclick="toggleTimerPanel()" aria-label="Fechar timer">✕</button></div>
+    <div class="timer-display" id="timerDisplay">01:30</div>
+    <div class="timer-presets">
+      <button type="button" data-secs="30">30s</button>
+      <button type="button" data-secs="60">60s</button>
+      <button type="button" data-secs="90">90s</button>
+      <button type="button" data-secs="120">2 min</button>
+      <button type="button" data-secs="180">3 min</button>
+    </div>
+    <div class="row" style="margin-top:8px;gap:6px">
+      <input type="number" id="timerCustomMin" min="0" max="30" placeholder="min" style="width:100%">
+      <input type="number" id="timerCustomSec" min="0" max="59" placeholder="seg" style="width:100%">
+      <button type="button" onclick="setCustomTimer()">Definir</button>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button type="button" class="primary" id="timerStartBtn" onclick="startPauseTimer()" style="flex:1">▶ Iniciar</button>
+      <button type="button" onclick="resetTimer()">↺ Zerar</button>
+    </div>
+    <label class="de-rest" style="margin-top:12px"><input type="checkbox" id="autoTimerCheck" onchange="saveTimerPrefs()"> Iniciar automaticamente ao marcar uma série ✓</label>
+    <label class="de-rest"><input type="checkbox" id="wakeLockCheck" onchange="toggleWakeLock(this.checked)"> Manter a tela ligada durante o descanso</label>
+    <p class="muted timer-note">O alarme (som + vibração + notificação) toca mesmo com o app em segundo plano na maioria dos Android. Com a tela apagada por muito tempo, o sistema pode pausar o timer — para o aviso mais confiável, deixe o app aberto ou ative "manter a tela ligada".</p>
+  </div>
+  <button type="button" class="timer-fab" id="timerFab" onclick="toggleTimerPanel()" aria-label="Abrir timer de descanso">
+    <span id="timerFabTime">⏱</span>
+  </button>
+</div>
+
+<script>
+const LIB=[
+["Supino reto com barra","Peito • Tríceps • Deltoide anterior","5–8","Deite com os olhos aproximadamente abaixo da barra, firme as escápulas no banco e mantenha os pés estáveis. Retire a barra com controle, desça em direção à parte média/baixa do peito mantendo os antebraços próximos da vertical e pressione para cima sem perder a posição dos ombros.","Supino com halteres","Chest press"],
+["Supino reto com halteres","Peito • Tríceps • Deltoide anterior","6–10","Comece com os halteres sobre o peito, estabilize as escápulas e mantenha os pés firmes. Desça os pesos de forma controlada até uma amplitude confortável, mantendo os cotovelos em uma posição natural, e suba aproximando os halteres sem bater um no outro.","Supino com barra","Máquina chest press"],
+["Supino inclinado com barra","Peito superior • Tríceps • Deltoide anterior","6–10","Ajuste o banco em uma inclinação moderada. Mantenha glúteos e costas apoiados, escápulas estáveis e desça a barra em direção à região superior do peito. Empurre a barra mantendo a trajetória consistente e sem elevar os ombros.","Supino inclinado com halteres","Máquina inclinada"],
+["Supino inclinado com halteres","Peito superior • Tríceps • Deltoide anterior","8–12","Posicione os halteres sobre o peito e mantenha o banco firme. Desça os pesos lentamente para as laterais do tórax, deixando os cotovelos acompanharem uma trajetória confortável. Suba de forma controlada sem perder o contato das costas com o banco.","Supino inclinado com barra","Chest press inclinado"],
+["Chest press máquina","Peito • Tríceps • Deltoide anterior","8–12","Ajuste o banco para que as alças fiquem aproximadamente na altura do meio do peito. Mantenha as costas apoiadas, segure as alças e empurre sem tirar os ombros do encosto. Retorne lentamente até sentir alongamento controlado no peito.","Supino reto","Chest press convergente"],
+["Chest press convergente","Peito • Tríceps • Deltoide anterior","8–12","Sente-se com o encosto bem ajustado e mantenha os pés firmes. Empurre as alças para frente enquanto mantém o tronco estável. Na volta, permita que os braços retornem de maneira controlada, sem deixar os pesos baterem.","Chest press máquina","Supino com halteres"],
+["Crossover alto para baixo","Peito","10–15","Fique entre as polias com os cabos posicionados acima dos ombros. Dê um passo à frente, mantenha o tronco estável e conduza as mãos em arco para baixo e para frente, aproximando-as à frente do corpo. Retorne lentamente mantendo leve flexão dos cotovelos.","Crossover médio","Crucifixo máquina"],
+["Crossover médio","Peito","10–15","Posicione as polias aproximadamente na altura do peito. Mantenha o peito aberto e os cotovelos levemente flexionados. Traga as mãos para a frente até aproximá-las, contraindo o peitoral, e volte lentamente sem deixar o ombro perder o controle.","Crossover alto","Crucifixo com halteres"],
+["Crucifixo máquina","Peito","10–15","Ajuste o banco para que os braços fiquem alinhados com o peito. Segure as alças, mantenha o tórax apoiado e aproxime os braços à frente do corpo em um arco confortável. Volte lentamente, evitando transformar o movimento em um empurrão.","Crossover","Crucifixo com halteres"],
+["Flexão de braço","Peito • Tríceps • Ombros","8–20","Comece em prancha com mãos apoiadas aproximadamente abaixo ou um pouco além dos ombros. Mantenha cabeça, tronco e quadril alinhados. Flexione os cotovelos controlando a descida e empurre o chão até retornar sem deixar o quadril cair.","Flexão inclinada","Supino"],
+["Flexão inclinada","Peito • Tríceps • Ombros","10–20","Apoie as mãos em uma superfície estável e mais alta que os pés. Mantenha o corpo alinhado e desça o peito em direção ao apoio. Empurre o apoio até estender os braços, usando uma amplitude que permaneça confortável.","Flexão de joelhos","Flexão tradicional"],
+["Paralelas assistidas","Peito • Tríceps • Ombros","6–12","Ajuste a assistência para conseguir controlar todo o movimento. Comece com o corpo estável, desça dobrando os cotovelos sem deixar os ombros despencarem e depois empurre as barras para retornar. Ajuste a inclinação do tronco conforme o foco desejado.","Mergulho em máquina","Tríceps na máquina"],
+["Mergulho em máquina","Tríceps • Peito","8–12","Sente-se e ajuste o equipamento para que os braços iniciem em uma posição confortável. Desça o movimento sob controle e empurre as alças até contrair o tríceps. Evite travar agressivamente os cotovelos no final.","Paralelas assistidas","Tríceps corda"],
+["Pullover com halter","Peito • Costas","8–12","Deite no banco com um halter seguro pelas duas mãos. Mantenha os braços em uma posição levemente flexionada e leve o peso para trás da cabeça até uma amplitude controlada. Retorne usando o peito e a musculatura das costas sem exagerar na amplitude do ombro.","Pullover na máquina","Pullover no cabo"],
+["Pullover no cabo","Dorsais • Peito","10–15","Posicione-se de frente para a polia alta e segure a barra ou corda com os braços estendidos. Com leve flexão dos cotovelos, puxe o implemento em direção às coxas mantendo o tronco estável. Retorne lentamente deixando os dorsais alongarem.","Pullover com halter","Puxada alta"],
+["Barra fixa pronada","Costas • Bíceps • Dorsais","5–10","Segure a barra com pegada pronada e comece com o corpo estável. Antes de puxar, organize as escápulas e conduza os cotovelos para baixo. Suba até uma altura confortável sem projetar o pescoço e desça controlando todo o movimento.","Barra fixa assistida","Puxada alta pronada"],
+["Barra fixa supinada","Costas • Bíceps","6–10","Use pegada supinada aproximadamente na largura dos ombros. Mantenha o tronco controlado e puxe os cotovelos para baixo e para trás, levando o peito em direção à barra. Desça devagar até uma amplitude que consiga controlar.","Chin-up assistido","Rosca direta"],
+["Barra fixa neutra","Costas • Bíceps • Dorsais","6–10","Segure as alças neutras e mantenha o corpo firme. Inicie puxando as escápulas e depois conduza os cotovelos para baixo. Evite balançar o corpo e controle a descida para aproveitar a fase excêntrica.","Puxada neutra","Barra fixa assistida"],
+["Puxada alta pronada","Dorsais • Bíceps","6–10","Sente-se com as pernas firmes e segure a barra em uma pegada pronada. Incline o tronco apenas o necessário para ficar confortável, puxe a barra em direção à parte superior do peito e pense em levar os cotovelos para baixo. Retorne lentamente sem soltar a carga de uma vez.","Puxada neutra","Barra fixa"],
+["Puxada alta neutra","Dorsais • Bíceps","8–12","Use uma pegada neutra e mantenha o peito aberto. Puxe as alças em direção à parte superior do peito conduzindo os cotovelos para baixo. Faça a volta devagar até sentir alongamento nos dorsais sem perder a postura.","Puxada pronada","Barra fixa neutra"],
+["Puxada alta supinada","Dorsais • Bíceps","8–12","Segure a barra com as palmas voltadas para você. Mantenha o tronco firme e puxe a barra para a região superior do peito, evitando transformar o movimento em uma remada com balanço. Controle a subida da barra até alongar os dorsais.","Puxada neutra","Barra fixa supinada"],
+["Remada baixa fechada","Costas • Dorsais • Bíceps","8–12","Sente-se com os pés apoiados e segure a manopla. Comece com os braços estendidos e o tronco firme. Puxe a manopla em direção ao abdômen enquanto conduz os cotovelos para trás. Retorne devagar sem arredondar excessivamente a coluna.","Remada baixa aberta","Remada máquina"],
+["Remada baixa aberta","Costas • Romboides • Deltoide posterior","8–12","Use uma pegada mais aberta e mantenha o peito aberto. Puxe a manopla em direção à parte alta do abdômen ou ao esterno inferior, aproximando as escápulas sem exagerar. Retorne controlando o alongamento das costas.","Remada baixa fechada","Remada apoiada"],
+["Remada unilateral com halter","Costas • Dorsais • Bíceps","8–12","Apoie uma mão e um joelho no banco, mantendo a coluna neutra. Deixe o halter descer sob controle e depois puxe o cotovelo em direção ao quadril, evitando girar o tronco. Faça todas as repetições de um lado antes de trocar.","Remada unilateral no cabo","Remada máquina"],
+["Remada unilateral no cabo","Costas • Dorsais • Bíceps","8–12","Fique de frente para a polia e mantenha o tronco estável. Puxe a manopla conduzindo o cotovelo para trás e ligeiramente para o quadril. Na volta, deixe o braço avançar de maneira controlada sem perder a posição do tronco.","Remada unilateral com halter","Remada baixa"],
+["Remada apoiada no banco","Costas • Romboides • Dorsais","8–12","Apoie o peito no banco inclinado e deixe os braços descerem com os pesos. Puxe os cotovelos para trás mantendo o tórax apoiado, evitando usar balanço do corpo. Desça lentamente até sentir as costas alongarem.","Remada máquina","Remada unilateral"],
+["Remada cavalinho","Costas • Dorsais • Trapézio","6–10","Posicione-se com os pés firmes e o tronco inclinado de maneira estável. Segure a barra ou pegador e puxe em direção ao abdômen, mantendo a coluna neutra. Evite transformar a repetição em um movimento de extensão lombar.","Remada apoiada","Remada baixa"],
+["Remada máquina articulada","Costas • Dorsais • Romboides","8–12","Ajuste o assento para que as alças fiquem em uma altura confortável. Apoie o peito quando houver suporte e puxe as alças conduzindo os cotovelos para trás. Retorne lentamente sem deixar as placas baterem.","Remada apoiada","Remada baixa"],
+["Encolhimento com halteres","Trapézio","10–15","Fique em pé com os halteres ao lado do corpo. Eleve os ombros diretamente para cima, sem fazer círculos amplos, e segure brevemente a contração. Desça de forma controlada até a posição inicial.","Encolhimento com barra","Encolhimento na máquina"],
+["Face pull","Deltoide posterior • Trapézio • Costas","10–15","Ajuste a corda na altura do rosto. Puxe a corda em direção ao rosto enquanto separa as mãos e mantém os cotovelos relativamente altos. Concentre-se em controlar a escápula e o ombro, sem usar o corpo para puxar a carga.","Crucifixo inverso","Face pull unilateral"],
+["Crucifixo inverso com halteres","Deltoide posterior • Costas","10–15","Incline o tronco ou use um banco inclinado para reduzir o balanço. Com os braços levemente flexionados, abra os halteres para os lados até alinhar aproximadamente com o tronco. Retorne lentamente mantendo a tensão nos deltoides posteriores.","Crucifixo inverso na máquina","Face pull"],
+["Crucifixo inverso máquina","Deltoide posterior • Romboides","10–15","Ajuste o assento e segure as alças com o peito apoiado. Abra os braços para trás usando principalmente a região posterior dos ombros. Evite elevar os ombros em direção às orelhas e controle o retorno.","Crucifixo inverso com halteres","Face pull"],
+["Desenvolvimento com halteres","Ombros • Tríceps","6–10","Sente-se com o encosto firme e os pés apoiados. Posicione os halteres próximos à altura dos ombros, pressione para cima mantendo o tronco estável e retorne lentamente. Não force uma amplitude que cause desconforto nos ombros.","Desenvolvimento máquina","Arnold press"],
+["Desenvolvimento máquina","Ombros • Tríceps","8–12","Ajuste o assento para que as alças iniciem aproximadamente na altura dos ombros. Pressione para cima mantendo as costas apoiadas e controle a descida até uma posição confortável.","Desenvolvimento com halteres","Arnold press"],
+["Arnold press","Ombros • Tríceps","8–12","Comece com os halteres à frente dos ombros e palmas voltadas para você. Conforme pressiona, gire as mãos para uma posição neutra ou pronada no topo, dentro da amplitude confortável. Inverta o movimento de forma controlada.","Desenvolvimento com halteres","Desenvolvimento máquina"],
+["Elevação lateral com halteres","Deltoide lateral","10–15","Fique em pé com os halteres ao lado do corpo. Eleve os braços lateralmente com leve flexão dos cotovelos, pensando em afastar as mãos para os lados. Pare em uma altura confortável e desça lentamente sem balançar o tronco.","Elevação lateral no cabo","Máquina lateral"],
+["Elevação lateral no cabo","Deltoide lateral","10–15","Posicione-se de lado para a polia baixa e segure a manopla com a mão oposta ou do mesmo lado conforme o equipamento. Eleve o braço lateralmente mantendo o tronco estável e desça devagar para preservar a tensão no deltoide.","Elevação lateral com halteres","Máquina lateral"],
+["Elevação lateral máquina","Deltoide lateral","10–15","Ajuste o assento e posicione os braços contra os apoios. Eleve os braços para os lados de maneira controlada, evitando impulsos. Retorne lentamente até a posição inicial.","Elevação lateral com halteres","Elevação lateral no cabo"],
+["Elevação frontal com halteres","Deltoide anterior","10–15","Fique em pé segurando os halteres à frente das coxas. Eleve os braços à frente até uma altura confortável, mantendo o tronco sem balanço. Desça lentamente e alterne ou faça as duas mãos juntas.","Elevação frontal no cabo","Desenvolvimento"],
+["Elevação frontal no cabo","Deltoide anterior","10–15","Segure a manopla ou barra da polia baixa e mantenha o corpo estável. Eleve o braço à frente do corpo até uma amplitude confortável, evitando inclinar o tronco para criar impulso.","Elevação frontal com halteres","Desenvolvimento"],
+["Rosca direta com barra","Bíceps • Braquial","8–12","Fique em pé com a barra próxima às coxas e cotovelos ao lado do corpo. Flexione os cotovelos levando a barra para cima sem jogar o tronco para trás. Contraia o bíceps no alto e desça lentamente até quase estender os braços.","Rosca Scott","Rosca no cabo"],
+["Rosca alternada com halteres","Bíceps • Braquial","8–12","Segure um halter em cada mão e mantenha os cotovelos próximos ao corpo. Flexione um braço por vez, girando a palma para cima conforme sobe se isso for confortável. Controle completamente a descida antes da próxima repetição.","Rosca simultânea","Rosca no cabo"],
+["Rosca martelo","Bíceps • Braquial • Braquiorradial","8–12","Mantenha as palmas voltadas uma para a outra durante todo o movimento. Flexione os cotovelos sem deslocá-los para a frente e leve os halteres para cima. Desça lentamente, mantendo a pegada neutra.","Rosca martelo na corda","Rosca alternada"],
+["Rosca martelo na corda","Bíceps • Braquial","10–15","Use uma polia baixa com corda e mantenha as palmas voltadas uma para a outra. Flexione os cotovelos levando a corda para cima e mantenha os braços superiores relativamente estáveis. Retorne devagar.","Rosca martelo","Rosca no cabo"],
+["Rosca Scott","Bíceps","8–12","Apoie a parte posterior dos braços no banco Scott e segure a barra ou halteres. Desça o peso lentamente até uma extensão confortável dos cotovelos e depois flexione os braços sem tirar os braços do apoio.","Rosca direta","Rosca máquina"],
+["Rosca concentrada","Bíceps","10–15","Sente-se e apoie a parte posterior do braço contra a parte interna da coxa. Flexione o cotovelo levando o halter em direção ao ombro, mantendo o ombro estável. Desça lentamente sem deixar o peso cair.","Rosca Scott","Rosca alternada"],
+["Rosca no cabo baixa","Bíceps","10–15","Fique de frente para a polia baixa com os cotovelos próximos ao corpo. Flexione os braços mantendo tensão constante no cabo e retorne devagar até quase estender os cotovelos.","Rosca direta","Rosca unilateral no cabo"],
+["Rosca unilateral no cabo","Bíceps","10–15","Segure a manopla com uma mão e estabilize o tronco. Flexione o cotovelo mantendo o braço superior parado e depois retorne de forma lenta. Evite girar o corpo para ajudar na subida.","Rosca alternada","Rosca concentrada"],
+["Tríceps corda na polia","Tríceps","10–15","Fique de frente para a polia alta, segure a corda e mantenha os cotovelos próximos ao corpo. Estenda os cotovelos para baixo sem movimentar excessivamente os ombros. Na volta, controle o peso até sentir alongamento do tríceps.","Tríceps barra","Tríceps unilateral"],
+["Tríceps barra na polia","Tríceps","8–12","Segure a barra da polia alta com os cotovelos próximos ao tronco. Empurre a barra para baixo até estender os cotovelos, mantendo o ombro relativamente parado. Retorne lentamente sem deixar a carga puxar o corpo para frente.","Tríceps corda","Tríceps máquina"],
+["Tríceps unilateral na polia","Tríceps","10–15","Segure uma manopla e mantenha o cotovelo ao lado do corpo. Estenda o braço para baixo, concentrando o movimento na articulação do cotovelo. Retorne lentamente sem girar o tronco.","Tríceps corda","Tríceps barra"],
+["Tríceps francês com halter","Tríceps","8–12","Sente-se ou deite-se e segure um halter com as duas mãos. Flexione os cotovelos deixando o peso descer atrás da cabeça em uma amplitude confortável. Estenda os cotovelos para retornar, evitando abrir excessivamente os braços.","Tríceps acima da cabeça","Tríceps testa"],
+["Tríceps acima da cabeça na corda","Tríceps","10–15","Fique de costas para a polia e leve a corda para trás da cabeça. Mantenha os cotovelos apontando para frente e estenda os braços até contrair o tríceps. Volte lentamente até sentir alongamento sem perder a posição dos cotovelos.","Tríceps francês","Tríceps unilateral"],
+["Tríceps testa com barra","Tríceps","8–12","Deite no banco e segure a barra acima do peito. Mantendo os braços superiores relativamente estáveis, flexione os cotovelos levando a barra em direção à testa ou ligeiramente atrás dela. Estenda os cotovelos para retornar sem usar impulso.","Tríceps francês","Tríceps corda"],
+["Tríceps máquina","Tríceps","8–12","Ajuste o assento e mantenha os braços apoiados conforme o equipamento. Estenda os cotovelos contra a resistência até contrair o tríceps e retorne lentamente. Evite levantar os ombros para ajudar no movimento.","Tríceps corda","Mergulho assistido"],
+["Agachamento livre com barra","Quadríceps • Glúteos • Posterior • Core","5–8","Posicione a barra de maneira estável sobre a região adequada das costas e firme os pés no chão. Respire e estabilize o tronco antes de iniciar. Desça flexionando quadris e joelhos enquanto os joelhos acompanham a direção dos pés. Suba empurrando o chão e mantendo o tronco firme.","Hack squat","Leg press"],
+["Agachamento frontal","Quadríceps • Glúteos • Core","6–10","Posicione a barra à frente dos ombros e mantenha os cotovelos altos. Desça mantendo o tronco relativamente vertical e os joelhos acompanhando os pés. Suba sem deixar os cotovelos despencarem ou o tronco colapsar.","Goblet squat","Hack squat"],
+["Hack squat","Quadríceps • Glúteos","6–10","Ajuste os pés e encoste costas e quadril no apoio. Desça dobrando joelhos e quadris até uma amplitude que mantenha a lombar estável. Empurre a plataforma sem deixar os joelhos perderem alinhamento com os pés.","Agachamento","Leg press"],
+["Leg press 45°","Quadríceps • Glúteos • Posterior","8–12","Apoie completamente costas e quadril no encosto. Posicione os pés de forma estável e desça a plataforma lentamente até uma amplitude em que a lombar permaneça apoiada. Empurre a plataforma sem deixar os joelhos colapsarem para dentro.","Hack squat","Agachamento"],
+["Leg press unilateral","Quadríceps • Glúteos","8–12","Posicione um pé no centro da plataforma e mantenha o quadril e as costas apoiados. Desça lentamente controlando o joelho e depois empurre a plataforma até retornar. Use uma carga que permita estabilidade durante todo o movimento.","Leg press 45°","Step-up"],
+["Agachamento goblet","Quadríceps • Glúteos","8–12","Segure um halter ou kettlebell junto ao peito. Mantenha o tronco firme e desça flexionando quadris e joelhos, permitindo que os joelhos acompanhem os pés. Suba empurrando o chão e mantendo o peso próximo ao corpo.","Agachamento frontal","Leg press"],
+["Afundo para frente","Quadríceps • Glúteos","8–12","Dê um passo à frente e desça o corpo controladamente, flexionando os dois joelhos. Mantenha o pé da frente firme e o tronco estável. Empurre o chão para retornar à posição inicial e alterne as pernas.","Afundo reverso","Afundo caminhando"],
+["Afundo reverso","Glúteos • Quadríceps","8–12","Dê um passo para trás e desça de maneira controlada, mantendo o pé da frente estável. O joelho da frente acompanha a direção dos dedos e o tronco permanece firme. Empurre o chão com a perna da frente para voltar.","Afundo para frente","Afundo búlgaro"],
+["Afundo búlgaro","Quadríceps • Glúteos","8–12","Apoie o peito do pé traseiro em um banco e deixe a perna da frente responsável pela maior parte do trabalho. Desça verticalmente com controle, mantendo o joelho acompanhando o pé. Suba empurrando o chão com a perna da frente.","Afundo reverso","Leg press unilateral"],
+["Passada caminhando","Quadríceps • Glúteos","8–12","Caminhe dando passos suficientemente longos para conseguir descer com controle. Flexione os joelhos e quadris, mantenha o tronco firme e empurre o chão para passar para a próxima repetição.","Afundo reverso","Afundo para frente"],
+["Step-up no banco","Quadríceps • Glúteos","8–12","Coloque um pé sobre uma plataforma estável. Incline-se apenas o necessário e empurre principalmente com a perna que está sobre a plataforma para subir. Desça controlando o corpo e evite usar impulso excessivo da perna de trás.","Afundo búlgaro","Leg press unilateral"],
+["Agachamento no smith","Quadríceps • Glúteos","6–10","Posicione-se sob a barra do smith com os pés firmes e uma distância confortável. Desça mantendo o tronco e os joelhos controlados, aproveitando a trajetória guiada do equipamento. Suba sem perder o apoio dos pés.","Agachamento livre","Hack squat"],
+["Agachamento sumô","Glúteos • Adutores • Quadríceps","8–12","Use uma base mais aberta e deixe os pés levemente apontados para fora. Desça mantendo os joelhos acompanhando a direção dos pés e o tronco firme. Suba empurrando o chão e contraindo glúteos no final sem hiperestender a lombar.","Agachamento goblet sumô","Leg press aberto"],
+["Agachamento goblet sumô","Glúteos • Adutores • Quadríceps","10–15","Segure o peso junto ao peito com os pés mais afastados. Desça entre as pernas mantendo os joelhos acompanhando os pés e o tronco estável. Suba controlando a trajetória e evitando juntar os joelhos no final.","Agachamento sumô","Leg press"],
+["Cadeira extensora","Quadríceps","10–15","Ajuste o eixo da máquina ao alinhamento do joelho e apoie as costas. Estenda os joelhos de maneira controlada até contrair o quadríceps, sem chutar a carga. Desça lentamente até a amplitude confortável.","Leg press","Hack squat"],
+["Cadeira flexora","Posterior de coxa","8–12","Ajuste o equipamento para que o eixo fique alinhado ao joelho e o apoio estabilize o corpo. Flexione os joelhos levando o rolo para baixo ou para trás, conforme a máquina, e retorne lentamente sem deixar a carga cair.","Mesa flexora","Terra romeno"],
+["Mesa flexora deitada","Posterior de coxa","8–12","Deite-se com quadril e tronco estáveis no equipamento. Flexione os joelhos aproximando os calcanhares dos glúteos sem levantar o quadril. Retorne lentamente até alongar a parte posterior das coxas de forma controlada.","Cadeira flexora","Flexora unilateral"],
+["Mesa flexora unilateral","Posterior de coxa","10–15","Ajuste a máquina e trabalhe uma perna por vez. Flexione o joelho mantendo o quadril apoiado e controle a descida. Evite girar a pelve para compensar a diferença de força entre os lados.","Mesa flexora","Cadeira flexora unilateral"],
+["Terra romeno com barra","Posterior • Glúteos • Lombar","6–10","Comece com a barra próxima às coxas. Faça uma dobradiça de quadril levando o bumbum para trás enquanto a barra desce próxima às pernas. Mantenha a coluna neutra e pare quando a amplitude deixar de ser confortável. Estenda o quadril para voltar.","Terra romeno com halteres","Good morning"],
+["Terra romeno com halteres","Posterior • Glúteos","8–12","Segure os halteres à frente das coxas e mantenha os pés firmes. Leve o quadril para trás, mantendo os pesos próximos às pernas e a coluna estável. Desça até sentir alongamento nos posteriores e retorne contraindo glúteos.","Terra romeno com barra","Stiff"],
+["Stiff com halteres","Posterior • Glúteos","8–12","Mantenha uma leve flexão nos joelhos e faça o movimento principalmente pelo quadril. Leve os pesos para baixo mantendo-os próximos ao corpo e pare quando a amplitude começar a comprometer a postura. Volte estendendo o quadril de maneira controlada.","Terra romeno","Mesa flexora"],
+["Good morning","Posterior • Glúteos • Lombar","8–12","Com a carga posicionada de forma segura, mantenha os pés estáveis e faça uma dobradiça de quadril levando o tronco à frente enquanto o quadril vai para trás. Mantenha a coluna neutra e retorne usando glúteos e posteriores.","Terra romeno","Extensão lombar"],
+["Hip thrust com barra","Glúteos • Posterior","8–12","Apoie a parte superior das costas em um banco e posicione a barra sobre o quadril com proteção adequada. Comece com o quadril baixo e faça extensão do quadril até o tronco e as coxas formarem uma linha confortável. Evite hiperestender a lombar no topo.","Glute bridge","Hip thrust máquina"],
+["Hip thrust máquina","Glúteos • Posterior","8–12","Ajuste o encosto e o apoio do quadril. Empurre através dos pés e estenda o quadril até contrair os glúteos, mantendo as costelas e o tronco controlados. Retorne lentamente sem perder o contato com o apoio.","Hip thrust com barra","Glute bridge"],
+["Glute bridge","Glúteos • Posterior","10–15","Deite-se com os pés apoiados e joelhos flexionados. Eleve o quadril contraindo os glúteos até formar uma linha confortável entre tronco e coxas. Faça uma breve pausa no topo e desça devagar.","Hip thrust","Glute bridge unilateral"],
+["Glute bridge unilateral","Glúteos • Posterior","10–15","Deite-se com um pé apoiado e a outra perna elevada. Empurre o chão com a perna de apoio para elevar o quadril mantendo a pelve nivelada. Desça lentamente e evite girar o quadril para compensar.","Glute bridge","Hip thrust"],
+["Abdução de quadril máquina","Glúteo médio • Glúteos","12–20","Sente-se com as costas apoiadas e ajuste o equipamento. Abra as pernas contra a resistência de forma controlada, sem usar impulso. Retorne lentamente até a posição inicial mantendo tensão no quadril.","Abdução no cabo","Caminhada lateral com faixa"],
+["Abdução de quadril no cabo","Glúteo médio","12–20","Prenda a tornozeleira na polia baixa e estabilize o corpo. Afaste a perna para o lado sem girar o tronco ou a pelve. Retorne lentamente e mantenha a tensão durante toda a série.","Abdução máquina","Caminhada lateral"],
+["Adutora máquina","Adutores","10–15","Ajuste o equipamento para começar em uma abertura confortável. Aproxime as pernas contra a resistência usando os músculos da parte interna da coxa. Retorne devagar sem deixar as placas baterem.","Agachamento sumô","Adutora no cabo"],
+["Panturrilha em pé","Panturrilhas","10–15","Fique com a parte anterior dos pés apoiada e permita que os calcanhares desçam de maneira controlada. Suba o máximo que conseguir sem perder equilíbrio e faça uma breve contração no topo. Evite quicar.","Panturrilha no smith","Panturrilha no leg press"],
+["Panturrilha sentada","Sóleo • Panturrilhas","10–15","Sente-se com a carga apoiada sobre as coxas e a parte anterior dos pés firme. Desça os calcanhares controladamente e depois empurre o apoio para elevar os calcanhares. Mantenha o movimento suave e completo.","Panturrilha em pé","Panturrilha no leg press"],
+["Panturrilha no leg press","Panturrilhas","10–15","Posicione apenas a parte anterior dos pés na plataforma e mantenha joelhos estáveis. Permita que os calcanhares desçam controladamente e depois faça a flexão plantar, elevando-os o máximo confortável.","Panturrilha em pé","Panturrilha sentada"],
+["Abdominal na máquina","Reto abdominal","10–20","Ajuste o equipamento para que o movimento permita flexionar o tronco confortavelmente. Contraia o abdômen aproximando o tórax da pelve sem puxar a cabeça com as mãos. Retorne lentamente mantendo tensão.","Crunch no cabo","Crunch no solo"],
+["Crunch no cabo","Reto abdominal","10–20","Ajoelhe-se diante da polia alta segurando a corda. Mantenha o quadril relativamente estável e flexione o tronco levando as costelas em direção à pelve. Retorne lentamente sem deixar a carga puxar o corpo de forma descontrolada.","Abdominal máquina","Crunch no solo"],
+["Crunch no solo","Reto abdominal","12–20","Deite-se com joelhos flexionados e pés apoiados. Eleve o tronco usando a contração do abdômen, sem puxar a cabeça com as mãos. Volte até a posição inicial de forma lenta e controlada.","Crunch no cabo","Abdominal máquina"],
+["Elevação de pernas","Abdômen • Flexores do quadril","8–15","Mantenha o tronco estável e eleve as pernas de forma controlada. Pense em aproximar a pelve do tronco no final do movimento em vez de simplesmente balançar as pernas. Desça devagar sem perder o controle lombar.","Elevação de joelhos","Reverse crunch"],
+["Elevação de joelhos na barra","Abdômen • Flexores do quadril","8–15","Fique suspenso com pegada firme. Eleve os joelhos em direção ao tronco controlando o balanço e, se possível, faça uma leve retroversão da pelve no alto. Desça devagar antes da próxima repetição.","Elevação de pernas","Reverse crunch"],
+["Reverse crunch","Reto abdominal","10–20","Deite-se e mantenha os joelhos flexionados. Em vez de apenas levantar as pernas, pense em enrolar a pelve para cima, aproximando os joelhos do tronco. Retorne lentamente sem deixar o movimento virar um balanço.","Elevação de pernas","Crunch"],
+["Prancha","Core","20–60 s","Apoie antebraços ou mãos e mantenha o corpo em linha reta. Contraia abdômen e glúteos, mantendo as costelas controladas e evitando deixar a lombar cair. Respire normalmente durante a sustentação.","Prancha lateral","Dead bug"],
+["Prancha lateral","Core • Oblíquos","20–45 s","Apoie o antebraço diretamente abaixo do ombro e mantenha o corpo alinhado lateralmente. Contraia abdômen e glúteos e evite deixar o quadril cair. Troque de lado após completar o tempo planejado.","Prancha","Pallof press"],
+["Dead bug","Core","8–15 por lado","Deite-se com braços apontando para cima e quadris e joelhos flexionados. Estenda braço e perna opostos sem deixar a lombar perder o controle. Retorne e alterne os lados mantendo a respiração e o abdômen ativos.","Bird dog","Pallof press"],
+["Bird dog","Core • Lombar • Glúteos","8–15 por lado","Comece em quatro apoios com mãos abaixo dos ombros e joelhos abaixo dos quadris. Estenda braço e perna opostos mantendo a pelve estável. Volte devagar e alterne os lados sem girar o tronco.","Dead bug","Prancha"],
+["Pallof press","Core • Oblíquos","10–15 por lado","Fique de lado para a polia e segure a manopla junto ao peito. Afaste as mãos do corpo sem permitir que a resistência gire o tronco. Retorne lentamente mantendo abdômen e glúteos ativos.","Prancha lateral","Cable chop"],
+["Cable chop","Core • Oblíquos","10–15 por lado","Posicione-se de lado para a polia e segure a manopla. Conduza o cabo em diagonal usando uma combinação controlada de movimento do tronco e quadril, sem transformar a repetição em um giro brusco. Retorne lentamente.","Pallof press","Wood chop"],
+["Flexão diamante","Tríceps • Peito","8–15","Aproxime as mãos sob o peito formando uma base estreita. Mantenha o corpo alinhado e desça controlando os cotovelos. Empurre o chão para retornar sem deixar o quadril cair.","Tríceps corda","Supino fechado"],
+["Supino fechado","Tríceps • Peito","6–10","Use uma pegada mais fechada que a do supino tradicional, mas ainda confortável para os punhos e ombros. Desça a barra com controle e mantenha os cotovelos relativamente próximos do tronco. Pressione sem perder a estabilidade das escápulas.","Tríceps testa","Flexão diamante"],
+["Remada invertida","Costas • Bíceps • Core","8–15","Posicione uma barra segura em altura adequada e fique abaixo dela com o corpo alinhado. Puxe o peito em direção à barra mantendo quadril e abdômen firmes. Desça lentamente sem deixar o corpo perder a linha.","Barra fixa assistida","Remada máquina"],
+["Kettlebell swing","Glúteos • Posterior • Core","10–20","Use uma dobradiça de quadril para levar o kettlebell entre as pernas e depois estenda explosivamente o quadril para projetá-lo à frente. O movimento deve vir principalmente do quadril, não de um agachamento profundo ou de uma elevação dos braços.","Terra romeno","Hip thrust"],
+["Levantamento terra convencional","Posterior • Glúteos • Costas","3–6","Posicione os pés de forma que a barra fique sobre o meio do pé. Segure a barra e organize a coluna, o abdômen e os ombros antes de iniciar. Empurre o chão e estenda joelhos e quadril juntos, mantendo a barra próxima ao corpo. Retorne com controle.","Terra romeno","Trap bar deadlift"],
+["Trap bar deadlift","Posterior • Glúteos • Quadríceps","4–8","Entre na trap bar com os pés firmes e segure as alças. Faça a saída mantendo o tronco estável e empurre o chão enquanto estende joelhos e quadril. Finalize em posição ereta sem inclinar o corpo para trás e retorne controladamente.","Levantamento terra","Leg press"],
+["Agachamento com pausa","Quadríceps • Glúteos • Core","5–8","Desça até uma profundidade que consiga controlar e faça uma pausa curta sem relaxar completamente. Mantenha tensão no tronco e depois suba com força, evitando rebater de forma descontrolada no fundo.","Agachamento livre","Hack squat"],
+["Leg press com pés altos","Glúteos • Posterior • Quadríceps","8–12","Posicione os pés um pouco mais altos na plataforma, mantendo-os estáveis. Desça com controle e preserve o apoio da lombar. Empurre a plataforma mantendo os joelhos acompanhando os pés.","Leg press tradicional","Hack squat"],
+["Leg press com pés baixos","Quadríceps","8–12","Posicione os pés um pouco mais baixos, desde que isso seja confortável para seus joelhos e tornozelos. Desça controladamente sem perder o apoio lombar e empurre a plataforma mantendo a trajetória dos joelhos.","Leg press tradicional","Cadeira extensora"],
+["Supino declinado com barra", "Peito inferior • Tríceps", "6–10", "Ajuste o banco em leve declínio e prenda os pés com segurança. Desça a barra até a parte inferior do peito controlando a trajetória e empurre de volta sem travar bruscamente os cotovelos no topo.", "Supino declinado com halteres", "Crossover baixo para cima"],
+["Supino declinado com halteres", "Peito inferior • Tríceps", "8–12", "Deite-se no banco declinado segurando os halteres próximos ao peito. Desça com controle até sentir alongamento confortável e empurre de volta unindo levemente os halteres no topo.", "Supino declinado com barra", "Crucifixo máquina"],
+["Crossover baixo para cima", "Peito superior", "10–15", "Ajuste as polias na posição baixa e puxe os cabos em diagonal para cima, cruzando levemente à frente do corpo. Controle a volta sem deixar os ombros irem para trás bruscamente.", "Crossover alto para baixo", "Supino inclinado com halteres"],
+["Flexão com pés elevados", "Peito superior • Ombros", "6–15", "Apoie os pés em um banco ou step e as mãos no chão um pouco mais afastadas que os ombros. Desça o peito controlando os cotovelos e empurre de volta mantendo o corpo alinhado.", "Flexão de braço", "Flexão inclinada"],
+["Peck deck (crucifixo peitoral)", "Peito", "10–15", "Sente-se no aparelho com as costas apoiadas e os braços levemente flexionados nas almofadas. Aproxime os braços à frente do peito de forma controlada e retorne sem deixar os ombros irem muito para trás.", "Crucifixo máquina", "Crossover médio"],
+["Levantamento terra sumô", "Posterior • Glúteos • Adutores", "3–6", "Posicione os pés bem afastados e as mãos entre os joelhos, mantendo os joelhos alinhados com a ponta dos pés. Empurre o chão para cima estendendo quadril e joelhos juntos, mantendo a barra próxima ao corpo.", "Levantamento terra convencional", "Trap bar deadlift"],
+["Remada curvada com barra", "Costas • Bíceps", "6–10", "Incline o tronco à frente mantendo a coluna neutra e segure a barra com os braços estendidos. Puxe a barra em direção ao abdômen levando os cotovelos para trás, sem usar impulso do corpo.", "Remada cavalinho", "Remada unilateral com halter"],
+["Remada T", "Costas • Bíceps", "8–12", "Apoie o peito no banco inclinado do aparelho de remada T e segure as alças. Puxe levando os cotovelos para trás e aproximando as escápulas, controlando a descida.", "Remada máquina articulada", "Remada apoiada no banco"],
+["Pulldown com braços retos", "Costas • Peito • Tríceps", "10–15", "Segure a barra na polia alta com os braços praticamente estendidos. Puxe a barra para baixo em direção às coxas usando principalmente os ombros, sem flexionar muito os cotovelos, e retorne controlando o movimento.", "Pullover no cabo", "Puxada alta pronada"],
+["Puxada unilateral no pulley", "Costas • Bíceps", "8–12 por lado", "Segure uma manopla única na polia alta e puxe em direção ao ombro do mesmo lado, levando o cotovelo para trás. Controle a volta sentindo o alongamento antes de repetir do outro lado.", "Remada unilateral no cabo", "Puxada alta neutra"],
+["Remada baixa neutra", "Costas • Bíceps", "8–12", "Sente-se no aparelho de remada baixa com pegada neutra (palmas voltadas uma para a outra). Puxe o cabo em direção ao abdômen levando os cotovelos para trás, mantendo o tronco relativamente estável.", "Remada baixa fechada", "Remada baixa aberta"],
+["Desenvolvimento militar com barra", "Ombros • Tríceps", "5–8", "Em pé ou sentado, posicione a barra na altura dos ombros com pegada pouco mais larga que os ombros. Empurre a barra para cima até estender os braços, sem hiperestender a lombar, e desça controlando até a posição inicial.", "Desenvolvimento com halteres", "Desenvolvimento no smith"],
+["Desenvolvimento no smith", "Ombros • Tríceps", "6–10", "Sente-se ou fique em pé sob a barra guiada do smith, ajustando a altura do banco se necessário. Empurre a barra para cima em linha reta e desça controlando até a altura dos ombros.", "Desenvolvimento militar com barra", "Desenvolvimento máquina"],
+["Elevação lateral inclinada", "Deltoide lateral", "10–15", "Incline levemente o tronco apoiando-se em um suporte ou banco e eleve o halter lateralmente a partir do ombro que fica mais distante do apoio. Essa inclinação aumenta a tensão no deltoide durante toda a amplitude.", "Elevação lateral com halteres", "Elevação lateral no cabo"],
+["Elevação frontal com anilha", "Deltoide anterior", "10–15", "Segure uma anilha com as duas mãos à frente do corpo. Eleve o peso à frente até a altura dos ombros mantendo os braços quase estendidos, e desça controlando sem usar impulso do tronco.", "Elevação frontal com halteres", "Elevação frontal no cabo"],
+["Remada alta com barra", "Deltoide • Trapézio", "8–12", "Segure a barra com pegada pouco mais estreita que os ombros e puxe-a verticalmente até a altura do peito, levando os cotovelos para cima e para fora. Evite subir a barra além de um ponto confortável para os ombros.", "Elevação lateral com halteres", "Encolhimento com barra"],
+["Encolhimento com barra", "Trapézio", "8–15", "Segure a barra à frente do corpo com os braços estendidos. Eleve os ombros diretamente para cima, sem girar, e desça controlando até sentir um leve alongamento.", "Encolhimento com halteres", "Remada alta com barra"],
+["Rosca 21", "Bíceps", "21 (7+7+7)", "Divida a série em três blocos de sete repetições: metade inferior da amplitude, metade superior e depois amplitude completa, sem pausar entre os blocos. Controle a carga para manter a técnica em todas as fases.", "Rosca direta com barra", "Rosca alternada com halteres"],
+["Rosca inversa com barra", "Bíceps • Antebraço", "8–12", "Segure a barra com as palmas voltadas para baixo (pegada pronada). Flexione os cotovelos elevando a barra sem balançar o tronco, e desça controlando a descida.", "Rosca com barra EZ", "Rosca de punho com barra"],
+["Rosca spider", "Bíceps", "8–12", "Apoie o peito e a parte de trás dos braços num banco inclinado ao contrário, deixando os braços pendendo à frente. Flexione os cotovelos elevando a carga e controle a descida sem deixar os braços perderem o apoio.", "Rosca Scott", "Rosca concentrada"],
+["Rosca com barra EZ", "Bíceps", "8–12", "Use a barra em W para uma pegada mais confortável para os punhos. Flexione os cotovelos mantendo-os próximos ao tronco e evite balançar o corpo para completar a repetição.", "Rosca direta com barra", "Rosca inversa com barra"],
+["Tríceps coice com halter", "Tríceps", "10–15", "Incline o tronco à frente apoiando uma mão no banco e mantenha o braço que trabalha com o cotovelo fixo próximo ao tronco. Estenda o cotovelo levando o halter para trás e controle a volta sem deixar o cotovelo cair.", "Tríceps francês com halter", "Tríceps unilateral na polia"],
+["Mergulho entre bancos", "Tríceps • Peito", "8–15", "Apoie as mãos na borda de um banco atrás do corpo e os calcanhares em outro banco à frente, ou no chão. Desça flexionando os cotovelos para trás e empurre de volta sem deixar os ombros subirem em direção às orelhas.", "Mergulho em máquina", "Paralelas assistidas"],
+["Tríceps na polia pegada supinada", "Tríceps", "10–15", "Segure a barra reta ou corda na polia alta com as palmas voltadas para cima. Estenda os cotovelos mantendo-os fixos junto ao tronco e controle a volta sem deixar o peso puxar os ombros para frente.", "Tríceps barra na polia", "Tríceps corda na polia"],
+["Sissy squat", "Quadríceps", "6–12", "Segure-se em um apoio à frente para equilíbrio. Incline o tronco levemente para trás enquanto flexiona os joelhos e eleva os calcanhares, descendo o quadril em linha quase reta. Suba controlando pelo quadríceps.", "Cadeira extensora", "Agachamento livre com barra"],
+["Passada lateral", "Glúteos • Adutores • Quadríceps", "8–12 por lado", "Dê um passo largo para o lado mantendo o pé oposto fixo no chão. Flexione o joelho que avançou levando o quadril para trás, mantendo a perna oposta relativamente estendida, e volte empurrando pelo pé que trabalhou.", "Afundo para frente", "Agachamento sumô"],
+["Afundo com halteres no lugar", "Quadríceps • Glúteos", "8–12 por lado", "Fique parado com um halter em cada mão, já posicionado em afundo estático. Desça flexionando os dois joelhos até perto de 90 graus e suba sem deslocar os pés entre as repetições.", "Afundo para frente", "Afundo búlgaro"],
+["Panturrilha unilateral em pé", "Panturrilha", "10–20 por lado", "Apoie-se em um suporte para equilíbrio e realize a elevação do calcanhar com uma perna de cada vez, descendo até sentir um alongamento leve e subindo até a ponta do pé.", "Panturrilha em pé", "Panturrilha sentada"],
+["Cadeira extensora unilateral", "Quadríceps", "10–15 por lado", "Ajuste o encosto e a almofada conforme a orientação do aparelho e trabalhe uma perna de cada vez. Estenda o joelho com controle até quase a extensão completa e desça sem deixar o peso bater na pilha.", "Cadeira extensora", "Sissy squat"],
+["Stiff com barra", "Posterior de coxa • Glúteos", "6–10", "Segure a barra à frente das coxas e, mantendo os joelhos levemente flexionados e praticamente fixos, incline o tronco para frente empurrando o quadril para trás. Desça até sentir alongamento no posterior de coxa e retorne estendendo o quadril.", "Terra romeno com barra", "Good morning"],
+["45 graus hiperextensão", "Lombar • Glúteos • Posterior de coxa", "10–15", "Posicione os quadris sobre o apoio do banco romano com os tornozelos presos. Desça o tronco controladamente à frente e retorne estendendo o quadril até o alinhamento do corpo, sem hiperestender no topo.", "Good morning", "Hip thrust com barra"],
+["Cadeira extensora reversa", "Glúteos • Posterior de coxa", "10–15", "Em um banco romano ou aparelho específico, posicione o corpo apoiado e estenda o quadril elevando as pernas com controle, contraindo os glúteos no topo. Desça devagar sem deixar o movimento virar embalo.", "Glute bridge", "Hip thrust máquina"],
+["Coice no cabo", "Glúteos", "10–15 por lado", "Prenda o tornozelo na polia baixa e fique de frente para o aparelho apoiando as mãos. Estenda o quadril levando a perna para trás mantendo o joelho levemente flexionado, contraindo o glúteo no final. Retorne controlando.", "Glute bridge unilateral", "Abdução de quadril no cabo"],
+["Ab wheel", "Core • Reto abdominal", "6–12", "Ajoelhe-se segurando a roda à frente do corpo. Role para frente mantendo o abdômen contraído e a lombar sem ceder, indo apenas até onde consegue manter o controle, e puxe de volta usando o abdômen.", "Prancha", "Pallof press"],
+["Abdominal infra no banco declinado", "Abdômen inferior", "10–20", "Prenda os pés no banco declinado e deite-se com o tronco apoiado. Flexione o quadril elevando o tronco em direção aos joelhos controlando o movimento, e desça devagar sem deixar o impulso assumir a repetição.", "Elevação de pernas", "Reverse crunch"],
+["Giro russo", "Core • Oblíquos", "10–20 por lado", "Sente-se com os joelhos flexionados e o tronco levemente inclinado para trás, mantendo a coluna reta. Gire o tronco de um lado para o outro de forma controlada, podendo segurar um peso à frente do corpo.", "Pallof press", "Cable chop"],
+["Prancha com elevação de perna", "Core • Glúteos", "20–40 s", "A partir da prancha com apoio nos antebraços, eleve uma perna mantendo o quadril estável e sem girar o tronco. Segure alguns segundos, desça controlando e alterne o lado conforme o planejado.", "Prancha", "Bird dog"],
+["Farmer's walk", "Antebraço • Trapézio • Core", "20–40 m", "Segure um halter ou kettlebell pesado em cada mão e caminhe mantendo o tronco ereto e os ombros para trás. Dê passos controlados sem deixar o corpo balançar de um lado para o outro.", "Encolhimento com halteres", "Prancha"],
+["Rosca de punho com barra", "Antebraço", "12–20", "Sente-se apoiando os antebraços nas coxas ou em um banco, com os punhos livres para se mover além da borda. Flexione os punhos elevando a barra e desça controlando até sentir um alongamento leve.", "Rosca inversa com barra", "Farmer's walk"],
+["Burpee", "Corpo inteiro • Condicionamento", "8–15", "A partir da posição em pé, agache e apoie as mãos no chão, jogue as pernas para trás em prancha, faça uma flexão opcional, retorne com um salto dos pés e finalize com um salto vertical. Mantenha o ritmo que permita boa técnica.", "Mountain climber", "Agachamento com pausa"],
+["Mountain climber", "Core • Condicionamento", "20–40 s", "Em posição de prancha com as mãos sob os ombros, alterne trazendo os joelhos em direção ao peito de forma rápida, mas controlada, mantendo o quadril estável e sem elevar demais os glúteos.", "Burpee", "Dead bug"],
+["Escalador no step", "Condicionamento • Quadríceps", "20–40 s", "Suba e desça um step ou banco baixo de forma alternada e contínua, mantendo o tronco ereto e o ritmo controlado. Use os braços naturalmente para ajudar no equilíbrio.", "Step-up no banco", "Mountain climber"]
+];
+
+const DEFAULT_DAYS=[
+  {id:"seg",label:"SEG",name:"Segunda — Push",sub:"Peito • Ombros • Tríceps",rest:false,ex:[["Supino reto com barra","5–8",2],["Desenvolvimento com halteres","6–10",2],["Elevação lateral com halteres","10–15",2],["Tríceps corda na polia","10–15",2]]},
+  {id:"ter",label:"TER",name:"Terça — Pull",sub:"Costas • Bíceps • Deltoide posterior",rest:false,ex:[["Barra fixa pronada","6–10",2],["Remada apoiada no banco","8–12",2],["Face pull","10–15",2],["Rosca direta com barra","8–12",2]]},
+  {id:"qua",label:"QUA",name:"Quarta — Pernas",sub:"Quadríceps • Posterior • Panturrilhas",rest:false,ex:[["Agachamento livre com barra","5–8",2],["Terra romeno com barra","6–10",2],["Cadeira extensora","10–15",1],["Mesa flexora deitada","8–12",1],["Panturrilha em pé","10–15",2]]},
+  {id:"qui",label:"QUI",name:"Quinta — Descanso",sub:"Recuperação",rest:true,ex:[]},
+  {id:"sex",label:"SEX",name:"Sexta — Upper",sub:"Peito • Costas • Ombros • Braços",rest:false,ex:[["Supino inclinado com barra","6–10",2],["Puxada alta pronada","6–10",2],["Desenvolvimento máquina","8–12",1],["Rosca martelo","8–12",1],["Tríceps testa com barra","8–12",1]]}
+];
+
+const THEMES={
+  latao:["#e3ab2f","#c98f22"],
+  ferro:["#6b8ba4","#4f6b80"],
+  ferrugem:["#c1573f","#9c3f2c"],
+  oliva:["#7a8f5a","#5f7145"],
+  grafite:["#9c9884","#726f5c"]
+};
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function find(n){return LIB.find(x=>x[0]===n)||[n,"Geral","6–12","Execute com controle e amplitude confortável."];}
+function genId(){return "d"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function emptyState(icon,title,text){return `<div class="card empty-state"><div class="empty-icon">${icon}</div><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p></div>`;}
+
+function loadPlan(){
+  let raw=localStorage.getItem("lvt_plan_v2");
+  if(raw){
+    try{let p=JSON.parse(raw);if(Array.isArray(p)&&p.length)return p;}catch(e){}
+  }
+  let oldRaw=localStorage.getItem("lvt_plan");
+  if(oldRaw){
+    try{
+      let old=JSON.parse(oldRaw);
+      let arr=Object.entries(old).map(([key,v])=>({
+        id:key,label:key,name:v.name,sub:v.sub,ex:v.ex||[],rest:!v.ex||v.ex.length===0
+      }));
+      if(arr.length)return arr;
+    }catch(e){}
+  }
+  return DEFAULT_DAYS.map(d=>({...d,ex:d.ex.map(e=>[...e])}));
+}
+
+let plan=loadPlan();
+let logs=JSON.parse(localStorage.getItem("lvt_logs")||"[]");
+let settings=Object.assign({name:"",unit:"kg",rir:1,theme:"latao",light:false,timerDuration:90,autoTimer:true,weightKg:null,heightCm:null,aiProvider:"gemini",aiKeyGemini:"",aiModelGemini:"gemini-2.5-flash",aiKeyAnthropic:"",aiModelAnthropic:"claude-sonnet-5",gyms:[]},JSON.parse(localStorage.getItem("lvt_settings")||"{}"));
+let currentGym=localStorage.getItem("lvt_current_gym")||"";
+let currentRating=0;
+if(settings.aiApiKey&&!settings.aiKeyAnthropic){settings.aiKeyAnthropic=settings.aiApiKey;settings.aiProvider="anthropic";}
+if(settings.aiModel&&settings.aiModelAnthropic==="claude-sonnet-5"){settings.aiModelAnthropic=settings.aiModel;}
+if(settings.aiModelGemini==="gemini-2.0-flash"){settings.aiModelGemini="gemini-2.5-flash";}
+let currentDay=localStorage.getItem("lvt_current")||localStorage.getItem("lvt_day")||(plan[0]&&plan[0].id);
+if(!plan.find(d=>d.id===currentDay))currentDay=plan[0]?plan[0].id:null;
+
+function saveAll(){localStorage.setItem("lvt_plan_v2",JSON.stringify(plan));localStorage.setItem("lvt_logs",JSON.stringify(logs));localStorage.setItem("lvt_settings",JSON.stringify(settings));}
+function savePlan(){localStorage.setItem("lvt_plan_v2",JSON.stringify(plan));}
+saveAll();
+
+function curDay(){return plan.find(d=>d.id===currentDay);}
+function draftKey(){return "draft_"+currentDay;}
+
+let toastTimer;
+function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2200);}
+
+function showView(id,btn){
+  if(id==="nutricao" && typeof renderNutrition==="function") renderNutrition();
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  $(id).classList.add("active");
+  document.querySelectorAll(".nav-tabs button").forEach(b=>b.classList.remove("active"));
+  if(btn)btn.classList.add("active");else document.querySelector(`.nav-tabs button[data-view="${id}"]`)?.classList.add("active");
+  if(id==="historico")renderHistory();
+  if(id==="exercicios")renderLibrary();
+  if(id==="config")markThemeActive();
+  if(id==="ia"){renderAiMessages();const hasKey=settings.aiProvider==="gemini"?!!settings.aiKeyGemini:!!settings.aiKeyAnthropic;$("aiKeyWarning").style.display=hasKey?"none":"block";}
+}
+function closeM(id){$(id).classList.remove("open");}
+
+/* ---------- treino / dias ---------- */
+function renderDayRail(){
+  $("dayRail").innerHTML=plan.map(d=>`
+    <button type="button" class="day-tab ${d.id===currentDay?"active":""}" onclick="selectDay('${d.id}')">
+      <span>${esc(d.label||"DIA")}</span>${d.rest?'<span class="day-tab-dot" aria-hidden="true"></span>':""}
+    </button>`).join("");
+}
+function selectDay(id){currentDay=id;localStorage.setItem("lvt_current",id);currentRating=0;renderTreino();}
+
+function lastSessionText(d){
+  const log=logs.find(l=>l.dayId===d.id||l.day===d.id);
+  return log?`Último registro: ${new Date(log.date).toLocaleDateString("pt-BR")}`:"";
+}
+
+/* ---------- academia ---------- */
+function renderGymSelect(){
+  const sel=$("gymSelect");
+  const gyms=settings.gyms||[];
+  sel.innerHTML=(gyms.length?gyms.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join(""):"")
+    +`<option value="__none__">Sem academia definida</option><option value="__add__">+ Nova academia</option>`;
+  sel.value=gyms.includes(currentGym)?currentGym:"__none__";
+}
+function onGymSelectChange(){
+  const v=$("gymSelect").value;
+  if(v==="__add__"){
+    const name=(prompt("Nome da academia:")||"").trim();
+    if(name){
+      if(!settings.gyms)settings.gyms=[];
+      if(!settings.gyms.includes(name))settings.gyms.push(name);
+      currentGym=name;
+      localStorage.setItem("lvt_current_gym",currentGym);
+      saveAll();
+    }
+    renderGymSelect();
+    return;
+  }
+  currentGym=v==="__none__"?"":v;
+  localStorage.setItem("lvt_current_gym",currentGym);
+}
+function removeCurrentGym(){
+  if(!currentGym){toast("Nenhuma academia selecionada.");return;}
+  if(!confirm(`Remover "${currentGym}" da lista de academias? Os treinos já salvos mantêm o registro.`))return;
+  settings.gyms=(settings.gyms||[]).filter(g=>g!==currentGym);
+  currentGym="";
+  localStorage.setItem("lvt_current_gym","");
+  saveAll();
+  renderGymSelect();
+}
+
+/* ---------- nota do treino ---------- */
+function renderRatingStars(){
+  $("ratingStars").innerHTML=[1,2,3,4,5].map(n=>`<button type="button" class="star-btn ${n<=currentRating?"on":""}" data-action="rate" data-n="${n}" aria-label="Nota ${n}">★</button>`).join("");
+}
+
+function renderTreino(){
+  renderDayRail();
+  renderGymSelect();
+  renderRatingStars();
+  const d=curDay();
+  if(!d){$("title").textContent="";$("sub").textContent="";$("list").innerHTML=emptyState("＋","Nenhum dia cadastrado","Use \"Editar dias\" para criar o primeiro dia de treino.");return;}
+  $("title").textContent=d.name;
+  $("sub").textContent=d.sub||"";
+  $("restBadge").style.display=d.rest?"inline-flex":"none";
+  const lastTxt=d.rest?"":lastSessionText(d);
+  $("lastSession").textContent=lastTxt;
+  $("lastSession").style.display=lastTxt?"block":"none";
+  $("warmupCard").style.display=d.rest?"none":"block";
+  $("finishBtn").style.display=d.rest?"none":"inline-flex";
+  $("editExBtn").style.display=d.rest?"none":"inline-flex";
+  $("addExBtn").style.display=d.rest?"none":"inline-flex";
+  $("gymRow").style.display=d.rest?"none":"flex";
+  $("ratingRow").style.display=d.rest?"none":"flex";
+  if(d.rest){
+    $("list").innerHTML=emptyState("🌙","Dia de descanso","Recupere-se: priorize sono, alimentação e, se quiser, uma caminhada leve.");
+    return;
+  }
+  if(!d.ex.length){
+    $("list").innerHTML=emptyState("＋","Nenhum exercício ainda","Use \"Editar exercícios\" ou \"+ Exercício\" para montar esta sessão.");
+    return;
+  }
+  const draft=JSON.parse(localStorage.getItem(draftKey())||"{}");
+  $("list").innerHTML=d.ex.map((e,i)=>exerciseRow(e,i,draft)).join("");
+}
+
+function exerciseRow(e,i,draft){
+  const info=find(e[0]);
+  let rows="";
+  for(let s=0;s<e[2];s++){
+    const v=(draft[i]||[])[s]||{};
+    rows+=`<div class="set">
+      <span class="set-index">${s+1}</span>
+      <input class="kg" type="number" step=".5" inputmode="decimal" value="${v.kg||""}" placeholder="${esc(settings.unit)}">
+      <input class="reps" type="number" inputmode="numeric" value="${v.reps||""}" placeholder="${esc(e[1])}">
+      <input class="rr" type="number" min="0" max="5" value="${v.rir??""}" placeholder="${esc(String(settings.rir))}">
+      <button type="button" class="ok ${v.done?"on":""}" data-action="toggle" data-idx="${i}" data-set="${s}" aria-label="Marcar série ${s+1} concluída">✓</button>
+    </div>`;
+  }
+  return `<div class="ex card">
+    <div class="exercise-top">
+      <div>
+        <div class="exercise-name">${esc(e[0])}</div>
+        <span class="badge">${esc(info[1])} • ${esc(e[1])}</span>
+      </div>
+      <button type="button" class="ghost guide-btn" data-action="guide" data-name="${esc(e[0])}">Ver execução</button>
+    </div>
+    <div class="set-labels"><span>Nº</span><span>Carga</span><span>Reps</span><span>RIR</span><span></span></div>
+    ${rows}
+    <div class="actions">
+      <button type="button" data-action="add-set" data-idx="${i}">+ Série</button>
+      <button type="button" data-action="remove-set" data-idx="${i}">− Série</button>
+    </div>
+  </div>`;
+}
+
+function syncDraft(){
+  const d=curDay();if(!d||d.rest)return;
+  const draft={};
+  document.querySelectorAll("#list .ex").forEach((card,i)=>{
+    draft[i]=[...card.querySelectorAll(".set")].map(r=>({
+      kg:r.querySelector(".kg").value,reps:r.querySelector(".reps").value,
+      rir:r.querySelector(".rr").value,done:r.querySelector(".ok").classList.contains("on")
+    }));
+  });
+  localStorage.setItem(draftKey(),JSON.stringify(draft));
+}
+function toggleSet(i,s,btn){
+  syncDraft();
+  const draft=JSON.parse(localStorage.getItem(draftKey())||"{}");
+  if(!draft[i])draft[i]=[];
+  if(!draft[i][s])draft[i][s]={};
+  const turningOn=!draft[i][s].done;
+  draft[i][s].done=turningOn;
+  localStorage.setItem(draftKey(),JSON.stringify(draft));
+  btn.classList.toggle("on");
+  if(turningOn&&settings.autoTimer){
+    setPresetTimer(timerDuration);
+    startPauseTimer();
+    openTimerPanel();
+  }
+}
+function changeSeries(i,n){
+  syncDraft();
+  const d=curDay();const e=d.ex[i];
+  const z=Math.max(1,Math.min(8,e[2]+n));
+  if(z===e[2])return;
+  e[2]=z;savePlan();renderTreino();
+}
+function finishSession(){
+  const d=curDay();
+  if(!d||d.rest){toast("Hoje é dia de descanso.");return;}
+  syncDraft();
+  const draft=JSON.parse(localStorage.getItem(draftKey())||"{}");
+  const rowsOut=[];
+  d.ex.forEach((e,i)=>(draft[i]||[]).forEach((v,s)=>{
+    if(v.done||v.kg||v.reps)rowsOut.push({exercise:e[0],set:s+1,kg:+v.kg||0,reps:+v.reps||0,rir:v.rir===""?+settings.rir:(+v.rir||0)});
+  }));
+  if(!rowsOut.length){toast("Preencha ou marque ao menos uma série.");return;}
+  logs.unshift({date:new Date().toISOString(),dayId:d.id,name:d.name,rows:rowsOut,gym:currentGym||null,rating:currentRating||0});
+  localStorage.removeItem(draftKey());
+  currentRating=0;
+  saveAll();
+  renderTreino();
+  renderHistory();
+  toast("Treino salvo!");
+}
+
+/* ---------- editar exercícios do dia ---------- */
+function openExerciseEditor(){
+  const d=curDay();if(!d)return;
+  $("editList").innerHTML=d.ex.map((e,i)=>editItemRow(e,i)).join("");
+  $("editModal").classList.add("open");
+}
+function editItemRow(e,i){
+  return `<div class="edit-row" data-idx="${i}">
+    <div class="tiny">Exercício ${i+1}</div>
+    <div class="edit-grid">
+      <button type="button" class="ex-pick-btn" data-action="pick-open" data-idx="${i}">${esc(e[0])}</button>
+      <input class="sc" type="number" min="1" max="8" value="${e[2]}" aria-label="Número de séries">
+      <button type="button" class="danger" data-action="remove-ex" data-idx="${i}" aria-label="Remover exercício">🗑</button>
+    </div>
+  </div>`;
+}
+function removeEdit(i){curDay().ex.splice(i,1);openExerciseEditor();}
+function saveExerciseEditor(){
+  const d=curDay();
+  document.querySelectorAll("#editList .edit-row").forEach((row,i)=>{
+    const sets=Math.max(1,Math.min(8,+row.querySelector(".sc").value||1));
+    if(d.ex[i])d.ex[i][2]=sets;
+  });
+  savePlan();closeM("editModal");renderTreino();toast("Treino atualizado!");
+}
+
+/* ---------- seletor de exercício com busca ---------- */
+let pickerTarget=null; // número = índice a trocar dentro do editor; "new-editor" | "new-quick" = adicionar
+function openPicker(target){
+  pickerTarget=target;
+  $("pickerSearch").value="";
+  renderPickerList("");
+  $("pickerModal").classList.add("open");
+  setTimeout(()=>$("pickerSearch").focus(),60);
+}
+function renderPickerList(q){
+  q=(q||"").toLowerCase().trim();
+  const items=LIB.filter(x=>(x[0]+" "+x[1]).toLowerCase().includes(q));
+  $("pickerCount").textContent=`${items.length} de ${LIB.length} exercícios`;
+  $("pickerList").innerHTML=items.length?items.map(x=>`
+    <button type="button" class="picker-item" data-action="pick" data-name="${esc(x[0])}">
+      <span class="picker-item-name">${esc(x[0])}</span>
+      <span class="picker-item-meta muted">${esc(x[1])} • ${esc(x[2])} reps</span>
+    </button>`).join(""):`<p class="muted" style="padding:14px 2px">Nada encontrado.</p>`;
+}
+function pickExercise(name){
+  const d=curDay();if(!d)return;
+  const info=find(name);
+  if(pickerTarget==="new-editor"||pickerTarget==="new-quick"){
+    d.ex.push([name,info[2],1]);
+  }else{
+    const idx=pickerTarget;
+    if(d.ex[idx])d.ex[idx]=[name,info[2],d.ex[idx][2]];
+  }
+  savePlan();
+  closeM("pickerModal");
+  if(pickerTarget==="new-quick"){
+    renderTreino();
+    toast("Exercício adicionado!");
+  }else{
+    openExerciseEditor();
+  }
+  pickerTarget=null;
+}
+function quickAddExercise(){
+  const d=curDay();if(!d||d.rest)return;
+  openPicker("new-quick");
+}
+
+/* ---------- editar dias ---------- */
+function openDayEditor(){renderDayEditorList();$("dayModal").classList.add("open");}
+function renderDayEditorList(){$("dayEditList").innerHTML=plan.map((d,i)=>dayEditRow(d,i)).join("");}
+function dayEditRow(d,i){
+  return `<div class="day-edit-row" data-idx="${i}">
+    <div class="day-edit-order">
+      <button type="button" data-action="move-up" data-idx="${i}" ${i===0?"disabled":""} aria-label="Mover dia para cima">↑</button>
+      <button type="button" data-action="move-down" data-idx="${i}" ${i===plan.length-1?"disabled":""} aria-label="Mover dia para baixo">↓</button>
+    </div>
+    <div class="day-edit-fields">
+      <input class="de-label" maxlength="10" value="${esc(d.label)}" placeholder="Aba (ex.: SEG)">
+      <input class="de-name" value="${esc(d.name)}" placeholder="Título da sessão">
+      <input class="de-sub" value="${esc(d.sub)}" placeholder="Subtítulo / grupos musculares">
+      <label class="de-rest"><input type="checkbox" class="de-rest-check" ${d.rest?"checked":""}> Dia de descanso</label>
+    </div>
+    <button type="button" class="danger" data-action="remove-day" data-idx="${i}" aria-label="Remover dia">🗑</button>
+  </div>`;
+}
+function syncDayEditorInputs(){
+  document.querySelectorAll("#dayEditList .day-edit-row").forEach((row,i)=>{
+    const d=plan[i];if(!d)return;
+    d.label=row.querySelector(".de-label").value.trim()||"DIA";
+    d.name=row.querySelector(".de-name").value.trim()||"Sessão";
+    d.sub=row.querySelector(".de-sub").value.trim();
+    d.rest=row.querySelector(".de-rest-check").checked;
+  });
+}
+function moveDay(i,dir){
+  syncDayEditorInputs();
+  const j=i+dir;if(j<0||j>=plan.length)return;
+  [plan[i],plan[j]]=[plan[j],plan[i]];
+  renderDayEditorList();
+}
+function removeDayAt(i){
+  if(plan.length<=1){toast("Mantenha pelo menos um dia.");return;}
+  if(!confirm("Remover este dia e seu treino associado?"))return;
+  syncDayEditorInputs();
+  plan.splice(i,1);
+  renderDayEditorList();
+}
+function addDay(){
+  syncDayEditorInputs();
+  plan.push({id:genId(),label:"NOVO",name:"Novo dia",sub:"",rest:false,ex:[]});
+  renderDayEditorList();
+}
+function saveDayEditor(){
+  syncDayEditorInputs();
+  if(!plan.find(d=>d.id===currentDay))currentDay=plan[0]?plan[0].id:null;
+  savePlan();
+  if(currentDay)localStorage.setItem("lvt_current",currentDay);
+  closeM("dayModal");
+  renderDayRail();renderTreino();
+  toast("Dias atualizados!");
+}
+
+/* ---------- guia de execução ---------- */
+function guide(name){
+  const x=find(name);
+  const alts=x.slice(4).filter(Boolean);
+  $("guideTitle").textContent=name;
+  $("guideBody").innerHTML=`
+    <div class="row wrap" style="margin-bottom:4px">
+      <span class="badge">${esc(x[1])}</span>
+      <span class="badge">Faixa sugerida: ${esc(x[2])} reps</span>
+    </div>
+    <div class="section-title">Execução</div>
+    <p class="muted">${esc(x[3])}</p>
+    <div class="section-title">Variações e substituições</div>
+    <p class="muted">${alts.length?esc(alts.join(" • ")):"Nenhuma variação cadastrada."}</p>
+    <div class="section-title">Como pensar no movimento</div>
+    <p class="muted">Priorize uma amplitude controlável, mantenha a trajetória consistente entre repetições e reserve as últimas repetições para técnica estável, não para movimento compensatório. A carga deve permitir terminar a série dentro da faixa de RIR planejada.</p>`;
+  $("guideModal").classList.add("open");
+}
+
+/* ---------- histórico ---------- */
+function sessionVolume(log){
+  return log.rows.reduce((s,r)=>s+(r.kg||0)*(r.reps||0),0);
+}
+function getFilteredLogs(){
+  const gymFilter=$("histGymFilter")?$("histGymFilter").value:"";
+  return gymFilter?logs.filter(l=>l.gym===gymFilter):logs;
+}
+function populateHistGymFilter(){
+  const sel=$("histGymFilter");
+  const prev=sel.value;
+  const gyms=[...new Set(logs.map(l=>l.gym).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  sel.innerHTML=`<option value="">Todas as academias</option>`+gyms.map(g=>`<option value="${esc(g)}">${esc(g)}</option>`).join("");
+  if(gyms.includes(prev))sel.value=prev;
+}
+function renderHistory(){
+  populateHistGymFilter();
+  const filtered=getFilteredLogs();
+  $("hist").innerHTML=filtered.length?filtered.map((l,i)=>{
+    const prev=filtered.slice(i+1).find(p=>p.dayId===l.dayId);
+    let deltaBadge="";
+    if(prev){
+      const prevVol=sessionVolume(prev),curVol=sessionVolume(l);
+      if(prevVol>0){
+        const pct=((curVol-prevVol)/prevVol)*100;
+        const cls=pct>0?"pos":pct<0?"neg":"";
+        deltaBadge=`<span class="delta-badge ${cls}">${pct>0?"+":""}${pct.toFixed(1)}% vs. anterior</span>`;
+      }
+    }
+    const stars=l.rating?"⭐".repeat(l.rating):"";
+    return `
+    <div class="card log-card">
+      <div class="row between"><b>${esc(l.name)}</b><span class="muted">${new Date(l.date).toLocaleDateString("pt-BR")}</span></div>
+      <div class="row wrap" style="gap:6px;margin:6px 0 8px">
+        ${l.gym?`<span class="badge">📍 ${esc(l.gym)}</span>`:""}
+        ${deltaBadge}
+        ${stars?`<span class="badge">${stars}</span>`:""}
+      </div>
+      <p class="muted" style="margin:0 0 8px">${l.rows.length} séries registradas</p>
+      <div class="log-rows">${l.rows.map(r=>`<div class="log-row"><span>${esc(r.exercise)}</span><span>${r.kg||"—"} ${esc(settings.unit)} × ${r.reps||"—"} <span class="muted">RIR ${r.rir}</span></span></div>`).join("")}</div>
+    </div>`;
+  }).join(""):emptyState("📓","Nenhum treino salvo ainda","Finalize uma sessão em Treino para começar seu histórico.");
+  populateChartExerciseSelect();
+  renderExerciseChart();
+}
+
+/* ---------- gráfico de evolução por exercício ---------- */
+function getExerciseNamesInLogs(){
+  const set=new Set();
+  getFilteredLogs().forEach(l=>l.rows.forEach(r=>{if(r.kg>0)set.add(r.exercise);}));
+  return [...set].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+}
+function populateChartExerciseSelect(){
+  const names=getExerciseNamesInLogs();
+  const sel=$("chartExerciseSelect");
+  const prev=sel.value;
+  sel.innerHTML=names.length?names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join(""):`<option value="">Nenhum exercício com carga registrada ainda</option>`;
+  if(names.includes(prev))sel.value=prev;
+}
+function buildLineChartSVG(points,width,height){
+  const pad=26;
+  const ys=points.map(p=>p.value);
+  const minY=Math.min(...ys),maxY=Math.max(...ys);
+  const yRange=(maxY-minY)||1;
+  const stepX=points.length>1?(width-2*pad)/(points.length-1):0;
+  const coords=points.map((p,i)=>{
+    const x=pad+i*stepX;
+    const y=height-pad-((p.value-minY)/yRange)*(height-2*pad);
+    return [x,y];
+  });
+  const path=coords.map((c,i)=>(i===0?"M":"L")+c[0].toFixed(1)+","+c[1].toFixed(1)).join(" ");
+  const areaPath=path+` L${coords[coords.length-1][0].toFixed(1)},${height-pad} L${coords[0][0].toFixed(1)},${height-pad} Z`;
+  const dots=coords.map((c,i)=>`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3.6" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.4"><title>${esc(points[i].label)}</title></circle>`).join("");
+  return `<svg viewBox="0 0 ${width} ${height}" class="chart-svg" preserveAspectRatio="none">
+    <path d="${areaPath}" fill="color-mix(in srgb, var(--accent) 16%, transparent)" stroke="none"></path>
+    <path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+    ${dots}
+  </svg>`;
+}
+function renderExerciseChart(){
+  const wrap=$("exerciseChartWrap");
+  const name=$("chartExerciseSelect").value;
+  if(!name){wrap.innerHTML=emptyState("📈","Sem dados ainda","Finalize treinos com carga preenchida para ver sua evolução aqui.");return;}
+  const points=[];
+  [...getFilteredLogs()].reverse().forEach(l=>{
+    const rowsForEx=l.rows.filter(r=>r.exercise===name&&r.kg>0);
+    if(!rowsForEx.length)return;
+    const topKg=Math.max(...rowsForEx.map(r=>r.kg));
+    const volume=rowsForEx.reduce((s,r)=>s+r.kg*r.reps,0);
+    points.push({date:l.date,value:topKg,volume,label:`${new Date(l.date).toLocaleDateString("pt-BR")} — ${topKg}${esc(settings.unit)}`});
+  });
+  if(!points.length){wrap.innerHTML=emptyState("📈","Sem cargas registradas","Registre carga (kg) nas séries desse exercício para ver o gráfico.");return;}
+  const first=points[0],last=points[points.length-1];
+  const diff=last.value-first.value;
+  const diffTxt=diff===0?"sem variação":`${diff>0?"+":""}${diff.toFixed(1)} ${esc(settings.unit)}`;
+  let sinceLastTxt="—",sinceLastCls="";
+  if(points.length>=2){
+    const prevVol=points[points.length-2].volume,curVol=points[points.length-1].volume;
+    if(prevVol>0){
+      const pct=((curVol-prevVol)/prevVol)*100;
+      sinceLastTxt=`${pct>0?"+":""}${pct.toFixed(1)}%`;
+      sinceLastCls=pct>0?"pos":pct<0?"neg":"";
+    }
+  }
+  wrap.innerHTML=`
+    <div class="chart-stats">
+      <div><span class="muted tiny">Carga máx. atual</span><br><b>${last.value}${esc(settings.unit)}</b></div>
+      <div><span class="muted tiny">Desde o treino anterior</span><br><b class="${sinceLastCls}">${sinceLastTxt}</b></div>
+      <div><span class="muted tiny">Variação total</span><br><b class="${diff>0?"pos":diff<0?"neg":""}">${diffTxt}</b></div>
+      <div><span class="muted tiny">Sessões</span><br><b>${points.length}</b></div>
+    </div>
+    ${buildLineChartSVG(points,600,170)}
+    <div class="chart-dates"><span>${new Date(first.date).toLocaleDateString("pt-BR")}</span><span>${new Date(last.date).toLocaleDateString("pt-BR")}</span></div>
+    <p class="muted" style="font-size:11px;margin-top:8px">"Desde o treino anterior" compara o volume total (carga × repetições) deste exercício entre as duas últimas sessões registradas.</p>`;
+}
+
+/* ---------- biblioteca ---------- */
+function renderLibrary(){
+  const q=($("search").value||"").toLowerCase().trim();
+  const items=LIB.filter(x=>(x[0]+" "+x[1]+" "+x[3]).toLowerCase().includes(q));
+  $("libCount").textContent=`${items.length} de ${LIB.length} exercícios`;
+  $("lib").innerHTML=items.length?`<div class="library-grid">${items.map(x=>`
+    <div class="card lib-card">
+      <div class="row between" style="align-items:flex-start">
+        <div><b>${esc(x[0])}</b><br><span class="muted">${esc(x[1])} • ${esc(x[2])}</span></div>
+        <button type="button" class="ghost" data-action="guide" data-name="${esc(x[0])}">Ver</button>
+      </div>
+      <p class="muted lib-desc">${esc(x[3])}</p>
+    </div>`).join("")}</div>`:emptyState("🔍","Nada encontrado","Tente buscar por outro nome ou grupo muscular.");
+}
+
+/* ---------- config / tema ---------- */
+function saveSettings(){
+  settings.name=$("name").value.trim();
+  settings.unit=$("unit").value;
+  settings.rir=Math.max(0,Math.min(5,+$("rir").value||0));
+  saveAll();renderTreino();toast("Preferências salvas.");
+}
+function resetAll(){
+  if(confirm("Isso vai apagar todos os treinos, histórico e preferências salvos neste navegador. Continuar?")){
+    localStorage.clear();location.reload();
+  }
+}
+function setTheme(t){
+  const c=THEMES[t]||THEMES.latao;
+  document.documentElement.style.setProperty("--accent",c[0]);
+  document.documentElement.style.setProperty("--accent-2",c[1]);
+  settings.theme=t;saveAll();markThemeActive();
+}
+function markThemeActive(){
+  document.querySelectorAll(".theme-swatch").forEach(b=>b.classList.remove("active"));
+  const t=settings.theme||"latao";
+  document.querySelector(`.theme-swatch[data-theme="${t}"]`)?.classList.add("active");
+}
+function toggleLight(){
+  document.body.classList.toggle("light");
+  settings.light=document.body.classList.contains("light");
+  saveAll();
+}
+function applyAppearance(){
+  setTheme(settings.theme||"latao");
+  document.body.classList.toggle("light",!!settings.light);
+  $("name").value=settings.name||"";
+  $("unit").value=settings.unit||"kg";
+  $("rir").value=settings.rir??1;
+  $("weightKg").value=settings.weightKg||"";
+  $("heightCm").value=settings.heightCm||"";
+  $("aiProvider").value=settings.aiProvider||"gemini";
+  $("aiKeyGemini").value=settings.aiKeyGemini||"";
+  const geminiModel=settings.aiModelGemini||"gemini-2.5-flash";
+  const knownGeminiModels=[...$("aiModelGemini").options].map(o=>o.value);
+  if(knownGeminiModels.includes(geminiModel)){
+    $("aiModelGemini").value=geminiModel;
+    $("aiModelGeminiCustom").style.display="none";
+  }else{
+    $("aiModelGemini").value="custom";
+    $("aiModelGeminiCustom").value=geminiModel;
+    $("aiModelGeminiCustom").style.display="block";
+  }
+  $("aiKeyAnthropic").value=settings.aiKeyAnthropic||"";
+  $("aiModelAnthropic").value=settings.aiModelAnthropic||"claude-sonnet-5";
+  onAiProviderChange();
+  computeAndShowBmi();
+  markThemeActive();
+}
+
+/* ---------- avaliação física (IMC) ---------- */
+function bmiCategory(bmi){
+  if(bmi<18.5)return "Abaixo do peso";
+  if(bmi<25)return "Peso considerado normal";
+  if(bmi<30)return "Sobrepeso";
+  if(bmi<35)return "Obesidade grau I";
+  if(bmi<40)return "Obesidade grau II";
+  return "Obesidade grau III";
+}
+function computeAndShowBmi(){
+  const w=settings.weightKg,h=settings.heightCm;
+  if(!w||!h){$("bmiResult").style.display="none";return;}
+  const bmi=w/((h/100)**2);
+  $("bmiResult").style.display="block";
+  $("bmiResult").innerHTML=`<b>IMC: ${bmi.toFixed(1)}</b> — ${esc(bmiCategory(bmi))}<br><span class="muted" style="font-size:11px">O IMC é uma referência geral e não diferencia massa muscular de gordura — pode não refletir bem a composição de quem treina força. Não substitui avaliação profissional (educador físico, nutricionista ou médico).</span>`;
+}
+function saveBodySettings(){
+  settings.weightKg=+$("weightKg").value||null;
+  settings.heightCm=+$("heightCm").value||null;
+  saveAll();
+  computeAndShowBmi();
+  toast("Dados salvos.");
+}
+
+/* ---------- assistente de IA ---------- */
+function onAiProviderChange(){
+  const p=$("aiProvider").value;
+  $("aiGeminiFields").style.display=p==="gemini"?"block":"none";
+  $("aiAnthropicFields").style.display=p==="anthropic"?"block":"none";
+}
+function onGeminiModelChange(){
+  $("aiModelGeminiCustom").style.display=$("aiModelGemini").value==="custom"?"block":"none";
+}
+function saveAiSettings(){
+  settings.aiProvider=$("aiProvider").value;
+  settings.aiKeyGemini=$("aiKeyGemini").value.trim();
+  const geminiSel=$("aiModelGemini").value;
+  settings.aiModelGemini=geminiSel==="custom"?($("aiModelGeminiCustom").value.trim()||"gemini-2.5-flash"):geminiSel;
+  settings.aiKeyAnthropic=$("aiKeyAnthropic").value.trim();
+  settings.aiModelAnthropic=$("aiModelAnthropic").value;
+  saveAll();
+  toast("Configuração da IA salva.");
+}
+let aiChat=JSON.parse(localStorage.getItem("lvt_ai_chat")||"[]");
+let aiPendingImage=null;
+
+function escMultiline(s){return esc(s).replace(/\n/g,"<br>");}
+function renderAiMessages(){
+  const box=$("aiMessages");
+  box.innerHTML=aiChat.length?aiChat.map(m=>`
+    <div class="ai-msg ai-${m.role==="user"?"user":"assistant"}">
+      ${m.image?`<img class="ai-msg-img" src="data:${m.image.media_type};base64,${m.image.data}">`:""}
+      <div class="ai-msg-text">${escMultiline(m.text)}</div>
+    </div>`).join(""):`<p class="muted" style="padding:10px 2px">Pergunte algo como "monta um treino de push focado em ombro" ou envie uma foto para receber feedback sobre seu físico.</p>`;
+  box.scrollTop=box.scrollHeight;
+}
+function saveAiChat(){localStorage.setItem("lvt_ai_chat",JSON.stringify(aiChat.slice(-40)));}
+function clearAiChat(){
+  if(!confirm("Apagar toda a conversa com o assistente?"))return;
+  aiChat=[];saveAiChat();renderAiMessages();
+}
+function resizeImageFile(file,maxDim,quality){
+  maxDim=maxDim||900;quality=quality||0.72;
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+      else if(h>=w&&h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+      const canvas=document.createElement("canvas");
+      canvas.width=w;canvas.height=h;
+      canvas.getContext("2d").drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      const dataUrl=canvas.toDataURL("image/jpeg",quality);
+      resolve({media_type:"image/jpeg",data:dataUrl.split(",")[1]});
+    };
+    img.onerror=reject;
+    img.src=url;
+  });
+}
+async function onAiFileChosen(){
+  const file=$("aiFileInput").files[0];
+  if(!file)return;
+  try{
+    const resized=await resizeImageFile(file);
+    aiPendingImage=resized;
+    $("aiImagePreview").style.display="flex";
+    $("aiImagePreview").innerHTML=`<img src="data:${resized.media_type};base64,${resized.data}"><button type="button" onclick="clearAiImage()">✕ remover foto</button>`;
+  }catch(e){
+    toast("Não consegui processar essa imagem.");
+  }
+}
+function clearAiImage(){
+  aiPendingImage=null;
+  $("aiFileInput").value="";
+  $("aiImagePreview").style.display="none";
+  $("aiImagePreview").innerHTML="";
+}
+function buildAiSystemPrompt(){
+  const planSummary=plan.map(x=>`${x.label}: ${x.rest?"descanso":x.ex.map(e=>e[0]).join(", ")}`).join(" | ");
+  let bodyLine="";
+  if(settings.weightKg&&settings.heightCm){
+    const bmi=settings.weightKg/((settings.heightCm/100)**2);
+    bodyLine=`Peso: ${settings.weightKg}kg, altura: ${settings.heightCm}cm, IMC aproximado: ${bmi.toFixed(1)}.`;
+  }
+  const recentLogs=logs.slice(0,6).map(l=>`${new Date(l.date).toLocaleDateString("pt-BR")}${l.gym?` (${l.gym})`:""}${l.rating?` [nota ${l.rating}/5]`:""} — ${l.name}: ${l.rows.slice(0,4).map(r=>`${r.exercise} ${r.kg}${settings.unit}x${r.reps}`).join("; ")}`).join("\n");
+  return `Você é um assistente de treino de musculação dentro do app pessoal "Low Volume Tracker", conversando diretamente com o dono do app. Seja direto, prático e baseado em evidências de treinamento de força. Responda em português do Brasil, de forma objetiva.
+Plano de treino atual do usuário: ${planSummary||"nenhum dia cadastrado"}.
+${bodyLine}
+Sessões recentes registradas:
+${recentLogs||"Nenhum histórico ainda."}
+Se o usuário enviar uma foto do próprio físico, dê uma avaliação honesta e construtiva focada em treino: postura visível, grupos musculares aparentemente mais e menos desenvolvidos, e sugestões de ênfase no treino. Nunca comente sobre atratividade ou faça observações que não sejam sobre treino/postura/desenvolvimento muscular. Deixe claro que sua avaliação é apenas uma referência visual e não substitui avaliação presencial de um educador físico, fisioterapeuta ou médico. Se a imagem não mostrar claramente o físico da pessoa para fins de treino, peça uma foto mais clara em vez de arriscar um palpite.`;
+}
+async function callAnthropic(turns,systemPrompt){
+  const messages=turns.map(m=>{
+    if(m.image)return {role:m.role,content:[{type:"image",source:{type:"base64",media_type:m.image.media_type,data:m.image.data}},{type:"text",text:m.text}]};
+    return {role:m.role,content:m.text};
+  });
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key":settings.aiKeyAnthropic,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:settings.aiModelAnthropic||"claude-sonnet-5",
+      max_tokens:1024,
+      system:systemPrompt,
+      messages
+    })
+  });
+  const data=await resp.json();
+  if(!resp.ok)return {ok:false,text:(data&&data.error&&data.error.message)||`Erro ${resp.status}`};
+  const textOut=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("\n")||"(sem resposta)";
+  return {ok:true,text:textOut};
+}
+function isModelUnavailableError(msg){
+  msg=(msg||"").toLowerCase();
+  return msg.includes("no longer available")||msg.includes("not found for api")||msg.includes("not supported for generatecontent")||msg.includes("is not found");
+}
+async function fetchGeminiModels(key){
+  try{
+    const resp=await fetch("https://generativelanguage.googleapis.com/v1beta/models",{headers:{"x-goog-api-key":key}});
+    const data=await resp.json();
+    if(!resp.ok)return {ok:false,error:(data&&data.error&&data.error.message)||`Erro ${resp.status}`};
+    const models=(data.models||[])
+      .filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent"))
+      .map(m=>(m.name||"").replace(/^models\//,""))
+      .filter(Boolean);
+    return {ok:true,models};
+  }catch(e){
+    return {ok:false,error:"Não consegui conectar à API do Google. Verifique sua internet."};
+  }
+}
+function sortGeminiModels(models){
+  return [...models].sort((a,b)=>{
+    const af=a.includes("flash")?0:1,bf=b.includes("flash")?0:1;
+    if(af!==bf)return af-bf;
+    return a.localeCompare(b);
+  });
+}
+function populateGeminiModelSelect(models,preferred){
+  const sel=$("aiModelGemini");
+  const sorted=sortGeminiModels(models);
+  sel.innerHTML=sorted.map(m=>`<option value="${esc(m)}">${esc(m)}</option>`).join("")+`<option value="custom">Outro (digitar o nome do modelo)</option>`;
+  const pick=sorted.includes(preferred)?preferred:sorted[0];
+  if(pick)sel.value=pick;
+  $("aiModelGeminiCustom").style.display="none";
+}
+async function testGeminiKey(){
+  const key=$("aiKeyGemini").value.trim();
+  if(!key){toast("Cole a chave do Gemini primeiro.");return;}
+  const btn=$("testGeminiBtn");
+  const oldLabel=btn.textContent;
+  btn.disabled=true;btn.textContent="Testando...";
+  $("aiTestResult").innerHTML="";
+  const r=await fetchGeminiModels(key);
+  if(!r.ok){
+    $("aiTestResult").innerHTML=`<span style="color:var(--danger)">❌ ${esc(r.error)}</span><br>Confira se colou a chave inteira e se ela foi criada em aistudio.google.com/apikey.`;
+  }else if(!r.models.length){
+    $("aiTestResult").innerHTML=`<span style="color:var(--danger)">❌ A chave é válida, mas nenhum modelo de conversa está disponível para ela.</span><br>Isso costuma significar que a chave foi criada por um caminho diferente do Google AI Studio (ex.: direto no Google Cloud Console, sem a API habilitada).`;
+  }else{
+    populateGeminiModelSelect(r.models,settings.aiModelGemini);
+    settings.aiModelGemini=$("aiModelGemini").value;
+    saveAll();
+    $("aiTestResult").innerHTML=`<span style="color:var(--success)">✅ Chave válida! ${r.models.length} modelo(s) disponível(is) — selecionei "${esc(settings.aiModelGemini)}" para você.</span>`;
+  }
+  btn.disabled=false;btn.textContent=oldLabel;
+}
+async function callGeminiOnce(model,contents,systemPrompt){
+  const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
+    method:"POST",
+    headers:{"content-type":"application/json","x-goog-api-key":settings.aiKeyGemini},
+    body:JSON.stringify({system_instruction:{parts:[{text:systemPrompt}]},contents})
+  });
+  const data=await resp.json();
+  if(!resp.ok)return {ok:false,text:(data&&data.error&&data.error.message)||`Erro ${resp.status}`};
+  const cand=data.candidates&&data.candidates[0];
+  const text=cand&&cand.content&&cand.content.parts?cand.content.parts.filter(p=>p.text).map(p=>p.text).join("\n"):"(sem resposta — talvez o Gemini tenha recusado a resposta por segurança; tente reformular)";
+  return {ok:true,text};
+}
+async function callGemini(turns,systemPrompt){
+  const contents=turns.map(m=>{
+    const parts=[];
+    if(m.image)parts.push({inline_data:{mime_type:m.image.media_type,data:m.image.data}});
+    parts.push({text:m.text});
+    return {role:m.role==="assistant"?"model":"user",parts};
+  });
+  const firstModel=settings.aiModelGemini||"gemini-2.5-flash";
+  let result=await callGeminiOnce(firstModel,contents,systemPrompt);
+  if(result.ok)return result;
+  if(!isModelUnavailableError(result.text))return result;
+
+  // o modelo configurado sumiu: pergunta pro Google quais modelos essa chave
+  // realmente pode usar agora, em vez de continuar chutando nomes fixos
+  const listing=await fetchGeminiModels(settings.aiKeyGemini);
+  if(!listing.ok||!listing.models.length)return result;
+  for(const model of sortGeminiModels(listing.models)){
+    if(model===firstModel)continue;
+    const r2=await callGeminiOnce(model,contents,systemPrompt);
+    if(r2.ok){
+      settings.aiModelGemini=model;
+      saveAll();
+      applyAppearance();
+      return r2;
+    }
+    if(!isModelUnavailableError(r2.text))return r2;
+  }
+  return result;
+}
+async function sendAiMessage(){
+  const text=$("aiInput").value.trim();
+  if(!text&&!aiPendingImage)return;
+  const provider=settings.aiProvider||"gemini";
+  const hasKey=provider==="gemini"?!!settings.aiKeyGemini:!!settings.aiKeyAnthropic;
+  if(!hasKey){toast("Adicione sua chave de API em Configurações.");showView("config");return;}
+
+  const imageForRequest=aiPendingImage;
+  aiChat.push({role:"user",text:text||"(foto enviada)",image:imageForRequest});
+  $("aiInput").value="";
+  $("aiInput").style.height="auto";
+  clearAiImage();
+  renderAiMessages();
+  saveAiChat();
+
+  aiChat.push({role:"assistant",text:"…"});
+  renderAiMessages();
+  $("aiSendBtn").disabled=true;
+
+  const systemPrompt=buildAiSystemPrompt();
+  const turns=aiChat.slice(0,-1).slice(-10);
+
+  try{
+    const result=provider==="gemini"?await callGemini(turns,systemPrompt):await callAnthropic(turns,systemPrompt);
+    aiChat.pop();
+    aiChat.push({role:"assistant",text:result.ok?result.text:`Não consegui falar com a IA: ${result.text}`});
+  }catch(e){
+    aiChat.pop();
+    aiChat.push({role:"assistant",text:"Não consegui conectar à API. Verifique sua internet e sua chave em Configurações."});
+  }
+  $("aiSendBtn").disabled=false;
+  renderAiMessages();
+  saveAiChat();
+}
+
+/* ---------- delegação de eventos ---------- */
+$("list").addEventListener("click",e=>{
+  const t=e.target.closest("[data-action]");if(!t)return;
+  const idx=+t.dataset.idx;const action=t.dataset.action;
+  if(action==="toggle")toggleSet(idx,+t.dataset.set,t);
+  else if(action==="add-set")changeSeries(idx,1);
+  else if(action==="remove-set")changeSeries(idx,-1);
+  else if(action==="guide")guide(t.dataset.name);
+});
+$("list").addEventListener("input",syncDraft);
+$("ratingStars").addEventListener("click",e=>{
+  const t=e.target.closest('[data-action="rate"]');if(!t)return;
+  const n=+t.dataset.n;
+  currentRating=currentRating===n?0:n;
+  renderRatingStars();
+});
+$("lib").addEventListener("click",e=>{
+  const t=e.target.closest('[data-action="guide"]');if(!t)return;
+  guide(t.dataset.name);
+});
+$("editList").addEventListener("click",e=>{
+  const t=e.target.closest("[data-action]");if(!t)return;
+  const i=+t.dataset.idx;
+  if(t.dataset.action==="remove-ex")removeEdit(i);
+  else if(t.dataset.action==="pick-open")openPicker(i);
+});
+$("pickerList").addEventListener("click",e=>{
+  const t=e.target.closest('[data-action="pick"]');if(!t)return;
+  pickExercise(t.dataset.name);
+});
+$("pickerSearch").addEventListener("input",e=>renderPickerList(e.target.value));
+$("dayEditList").addEventListener("click",e=>{
+  const t=e.target.closest("[data-action]");if(!t)return;
+  const i=+t.dataset.idx;
+  if(t.dataset.action==="move-up")moveDay(i,-1);
+  else if(t.dataset.action==="move-down")moveDay(i,1);
+  else if(t.dataset.action==="remove-day")removeDayAt(i);
+});
+
+/* ---------- timer de descanso ---------- */
+const SILENT_WAV="data:audio/wav;base64,UklGRqQMAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YYAMAAABAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//wEA//8BAP//AQD//w==";
+let timerDuration=settings.timerDuration||90;
+let timerRemaining=timerDuration;
+let timerEndAt=null;
+let timerInterval=null;
+let wakeLockRef=null;
+let alarmAudioCtx=null;
+let keepAliveAudio=null;
+
+function formatTime(s){
+  s=Math.max(0,Math.round(s));
+  return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+}
+function toggleTimerPanel(){$("timerPanel").classList.toggle("open");}
+function openTimerPanel(){$("timerPanel").classList.add("open");}
+function updateTimerDisplay(){
+  const remaining=timerEndAt?Math.max(0,(timerEndAt-Date.now())/1000):timerRemaining;
+  $("timerDisplay").textContent=formatTime(remaining);
+  $("timerFabTime").textContent=timerEndAt?formatTime(remaining):"⏱";
+  $("timerFab").classList.toggle("running",!!timerEndAt);
+  if(timerEndAt&&remaining<=0)timerFinished();
+}
+function startPauseTimer(){
+  if(timerEndAt){
+    timerRemaining=Math.max(0,(timerEndAt-Date.now())/1000);
+    timerEndAt=null;
+    clearInterval(timerInterval);
+    $("timerStartBtn").textContent="▶ Continuar";
+    stopKeepAliveAudio();
+  }else{
+    if(timerRemaining<=0)timerRemaining=timerDuration;
+    timerEndAt=Date.now()+timerRemaining*1000;
+    clearInterval(timerInterval);
+    timerInterval=setInterval(updateTimerDisplay,250);
+    $("timerStartBtn").textContent="⏸ Pausar";
+    startKeepAliveAudio();
+    requestNotifPermission();
+  }
+  updateTimerDisplay();
+}
+function resetTimer(){
+  clearInterval(timerInterval);
+  timerEndAt=null;
+  timerRemaining=timerDuration;
+  $("timerStartBtn").textContent="▶ Iniciar";
+  stopKeepAliveAudio();
+  updateTimerDisplay();
+}
+function setPresetTimer(secs){
+  timerDuration=secs;timerRemaining=secs;timerEndAt=null;
+  clearInterval(timerInterval);
+  $("timerStartBtn").textContent="▶ Iniciar";
+  saveTimerPrefs();
+  updateTimerDisplay();
+}
+function setCustomTimer(){
+  const min=+$("timerCustomMin").value||0,sec=+$("timerCustomSec").value||0;
+  setPresetTimer(Math.max(5,min*60+sec));
+}
+function saveTimerPrefs(){
+  settings.timerDuration=timerDuration;
+  settings.autoTimer=$("autoTimerCheck").checked;
+  saveAll();
+}
+function timerFinished(){
+  clearInterval(timerInterval);
+  timerEndAt=null;timerRemaining=0;
+  $("timerStartBtn").textContent="▶ Iniciar";
+  stopKeepAliveAudio();
+  playAlarm();
+  if(navigator.vibrate)navigator.vibrate([300,120,300,120,300]);
+  notifyTimerDone();
+  toast("Descanso acabou — bora voltar! 💪");
+  updateTimerDisplay();
+}
+function playAlarm(){
+  try{
+    const ctx=alarmAudioCtx||(alarmAudioCtx=new (window.AudioContext||window.webkitAudioContext)());
+    const beep=(freq,start,dur)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type="sine";o.frequency.value=freq;
+      o.connect(g);g.connect(ctx.destination);
+      const t0=ctx.currentTime+start;
+      g.gain.setValueAtTime(.0001,t0);
+      g.gain.exponentialRampToValueAtTime(.35,t0+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+      o.start(t0);o.stop(t0+dur+.05);
+    };
+    beep(880,0,.18);beep(880,.26,.18);beep(1046,.52,.32);
+  }catch(e){}
+}
+function requestNotifPermission(){
+  if("Notification" in window&&Notification.permission==="default"){
+    Notification.requestPermission().catch(()=>{});
+  }
+}
+function notifyTimerDone(){
+  if(!("Notification" in window)||Notification.permission!=="granted")return;
+  try{
+    if(navigator.serviceWorker&&navigator.serviceWorker.controller){
+      navigator.serviceWorker.ready.then(reg=>reg.showNotification("Descanso acabou!",{
+        body:"Hora de voltar pra próxima série.",
+        icon:"icons/icon-192.png",badge:"icons/icon-192.png",
+        vibrate:[300,120,300],tag:"lvt-timer"
+      }));
+    }else{
+      new Notification("Descanso acabou!",{body:"Hora de voltar pra próxima série.",icon:"icons/icon-192.png"});
+    }
+  }catch(e){}
+}
+function startKeepAliveAudio(){
+  try{
+    if(!keepAliveAudio){
+      keepAliveAudio=new Audio(SILENT_WAV);
+      keepAliveAudio.loop=true;
+      keepAliveAudio.volume=.01;
+    }
+    keepAliveAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function stopKeepAliveAudio(){if(keepAliveAudio)keepAliveAudio.pause();}
+async function toggleWakeLock(on){
+  try{
+    if(on){
+      if("wakeLock" in navigator){
+        wakeLockRef=await navigator.wakeLock.request("screen");
+        wakeLockRef.addEventListener("release",()=>{wakeLockRef=null;});
+      }else{
+        toast("Seu navegador não suporta manter a tela ligada.");
+        $("wakeLockCheck").checked=false;
+      }
+    }else if(wakeLockRef){
+      wakeLockRef.release();wakeLockRef=null;
+    }
+  }catch(e){$("wakeLockCheck").checked=false;}
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible"){
+    updateTimerDisplay();
+    if($("wakeLockCheck").checked&&!wakeLockRef)toggleWakeLock(true);
+  }
+});
+document.querySelector(".timer-presets").addEventListener("click",e=>{
+  const t=e.target.closest("[data-secs]");if(!t)return;
+  setPresetTimer(+t.dataset.secs);
+});
+$("autoTimerCheck").checked=!!settings.autoTimer;
+$("timerDisplay").textContent=formatTime(timerDuration);
+
+$("aiFileInput").addEventListener("change",onAiFileChosen);
+$("aiInput").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){
+    e.preventDefault();
+    sendAiMessage();
+  }
+});
+$("aiInput").addEventListener("input",function(){
+  this.style.height="auto";
+  this.style.height=Math.min(120,this.scrollHeight)+"px";
+});
+
+applyAppearance();
+renderDayRail();
+renderTreino();
+renderHistory();
+renderLibrary();
+renderAiMessages();
+
+/* ---------- PWA: instalação + offline ---------- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  });
+}
+let deferredInstallPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  $("installBtn").style.display="inline-flex";
+});
+window.addEventListener("appinstalled",()=>{
+  deferredInstallPrompt=null;
+  $("installBtn").style.display="none";
+});
+function installApp(){
+  if(!deferredInstallPrompt)return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(()=>{
+    deferredInstallPrompt=null;
+    $("installBtn").style.display="none";
+  });
+}
+
+/* ===== MEU PERFORMANCE — módulo de alimentação integrado ===== */
+(function(){
+  const NKEY='mp_nutrition_v1', CKEY='mp_nutrition_chat_v1';
+  const NP_DEFAULT={display_name:'',calorie_goal:2100,protein_goal_g:150,carb_goal_g:220,fat_goal_g:70};
+  let np=loadN('profile',NP_DEFAULT), nm=loadN('meals',[]), nch=loadN('chat',[]), nd=localYmd(new Date()), nw=0, nattach=null, nbusy=false, nedit=null;
+  function loadN(k,d){try{return JSON.parse(localStorage.getItem(NKEY+'.'+k))??d}catch{return d}}
+  function saveN(k,v){localStorage.setItem(NKEY+'.'+k,JSON.stringify(v))}
+  function localYmd(d){const p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
+  function nowLocal(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `${localYmd(d)}T${p(d.getHours())}:${p(d.getMinutes())}`}
+  function ndays(s,n){const d=new Date(s+'T12:00');d.setDate(d.getDate()+n);return localYmd(d)}
+  function mday(m){return localYmd(new Date(m.eaten_at))}
+  function mtime(m){const d=new Date(m.eaten_at),p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}`}
+  function sums(a){return a.reduce((x,m)=>({cal:x.cal+(+m.calories||0),p:x.p+(+m.protein_g||0),c:x.c+(+m.carbs_g||0),f:x.f+(+m.fat_g||0)}),{cal:0,p:0,c:0,f:0})}
+  function dayMeals(d){return nm.filter(m=>mday(m)===d).sort((a,b)=>new Date(a.eaten_at)-new Date(b.eaten_at))}
+  function ng(){return {cal:+np.calorie_goal||2100,p:+np.protein_goal_g||150,c:+np.carb_goal_g||220,f:+np.fat_goal_g||70}}
+  function nr(n){return Math.round(+n||0)}
+  function renderNutrition(){
+    const g=ng(), today=localYmd(new Date()), isToday=nd===today, dm=dayMeals(nd), t=sums(dm), pct=Math.round(t.cal/g.cal*100), left=g.cal-nr(t.cal);
+    const diff=Math.round((new Date(nd+'T12:00')-new Date(today+'T12:00'))/86400000); $('nutDateTitle').textContent=diff===0?'Hoje':diff===-1?'Ontem':new Date(nd+'T12:00').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short'}).replace('.',''); $('nutNextDay').style.visibility=isToday?'hidden':'visible'; $('nutTodayBtn').style.display=isToday?'none':'inline-flex';
+    $('nutCalories').textContent=nr(t.cal);$('nutPercent').textContent=pct+'%';$('nutRingFg').style.strokeDasharray=`${Math.min(100,pct)} 100`;$('nutRing').classList.toggle('over',pct>100);$('nutRemaining').innerHTML=left>=0?`Restam <b>${left}</b> kcal · meta ${g.cal}`:`<b>${-left}</b> kcal acima · meta ${g.cal}`;
+    [['P',t.p,g.p,'PB'],['C',t.c,g.c,'CB'],['F',t.f,g.f,'FB']].forEach(([k,v,goal,b])=>{$('nut'+k).textContent=nr(v);$('nut'+k+'G').textContent=nr(goal);$('nut'+b).style.width=Math.min(100,goal?v/goal*100:0)+'%'});
+    $('nutMeals').innerHTML=dm.length?dm.map(nmealHtml).join(''):`<div class="nut-empty">🍽<br><b>Nada registrado ${isToday?'hoje':'neste dia'}.</b><br>Use a IA ou registre manualmente.</div>`;
+    renderNWeek(); renderNChat();
+  }
+  function nmealHtml(m){const foods=(m.foods||[]).map(f=>esc(f.name)+(f.quantity?` <span>(${esc(f.quantity)})</span>`:'')).join(' · ');return `<article class="nut-meal" data-id="${esc(m.id)}"><div class="nut-meal-top"><span class="nut-time">${mtime(m)}</span><div class="nut-main"><b>${esc(m.title)}</b>${foods?`<p class="nut-foods">${foods}</p>`:''}</div><div class="nut-kcal-mini"><strong>${nr(m.calories)}</strong><small>kcal</small></div></div><div class="nut-macros-row"><span class="nut-pill">P ${nr(m.protein_g)}g</span><span class="nut-pill">C ${nr(m.carbs_g)}g</span><span class="nut-pill">G ${nr(m.fat_g)}g</span>${m.ai_confidence!=null&&m.ai_confidence<.6?'<span class="nut-pill nut-low">≈ estimativa</span>':''}<span class="nut-actions"><button data-na="edit">Editar</button><button data-na="del">Apagar</button></span></div></article>`}
+  function weekDays(){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+(d.getDay()===0?-6:1-d.getDay())+nw*7);return Array.from({length:7},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return localYmd(x)})}
+  function renderNWeek(){const g=ng(),ds=weekDays(),today=localYmd(new Date()),ss=ds.map(d=>sums(dayMeals(d))),max=Math.max(g.cal*1.2,...ss.map(x=>x.cal),1),H=125,W=330,bw=28,gap=(W-bw*7)/6;let svg=`<svg class="nut-week-svg" viewBox="0 0 ${W} 150"><line x1="0" x2="${W}" y1="${H-g.cal/max*H}" y2="${H-g.cal/max*H}" stroke="var(--muted)" stroke-dasharray="4 4" opacity=".5"/>`;const names=['seg','ter','qua','qui','sex','sáb','dom'];ds.forEach((d,i)=>{const x=i*(bw+gap),h=Math.max(ss[i].cal?4:0,ss[i].cal/max*H);svg+=`<rect x="${x}" y="0" width="${bw}" height="${H}" rx="7" fill="var(--surface-2)"/><rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="7" fill="${ss[i].cal>g.cal?'var(--danger)':'var(--accent)'}"/><text x="${x+bw/2}" y="145" text-anchor="middle" font-size="10" fill="${d===today?'var(--accent)':'var(--muted)'}">${names[i]}</text>`});$('nutWeekChart').innerHTML=svg+'</svg>';$('nutWeekRange').textContent=`${new Date(ds[0]+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})} – ${new Date(ds[6]+'T12:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})}`;const logged=ss.filter(x=>x.cal>0),elapsed=ds.filter(d=>d<=today).length||7,avg=logged.length?logged.reduce((a,x)=>a+x.cal,0)/logged.length:0,bal=logged.reduce((a,x)=>a+x.cal,0)-g.cal*logged.length;$('nutWAvg').textContent=nr(avg);$('nutWDays').textContent=`${logged.length}/${elapsed}`;$('nutWBalance').textContent=(bal>0?'+':'')+nr(bal);$('nutWProt').textContent=logged.length?nr(logged.reduce((a,x)=>a+x.p,0)/logged.length):0;let insight='Registre refeições para gerar insights.';if(logged.length){const dp=(avg-g.cal)/g.cal*100;insight=Math.abs(dp)<=7?'🎯 Média próxima da meta.':dp>0?`📈 Média ${nr(avg-g.cal)} kcal acima da meta.`:`📉 Média ${nr(g.cal-avg)} kcal abaixo da meta.`;const pa=logged.reduce((a,x)=>a+x.p,0)/logged.length;if(pa<g.p*.8)insight+=` Proteína média ${nr(pa)}g/dia (meta ${nr(g.p)}g).`}$('nutInsight').textContent=insight}
+  function renderNChat(){const box=$('nutMessages');box.innerHTML=nch.length?nch.slice(-30).map(m=>`<div class="nut-msg ${m.role==='user'?'user':'ai'}">${m.image?`<img src="data:${m.image.media_type};base64,${m.image.data}" alt="Imagem enviada">`:''}${esc(m.text)}</div>`).join(''):'<div class="nut-msg ai">Oi! Diga o que você comeu, mande uma foto ou pergunte como está sua alimentação.</div>';box.scrollTop=box.scrollHeight;$('nutChips').innerHTML=['Almocei arroz, feijão e 2 bifes','Quanto de proteína comi hoje?','Como foi minha semana?'].map(x=>`<button type="button">${esc(x)}</button>`).join('')}
+  window.nutPrevDay=()=>{nd=ndays(nd,-1);renderNutrition()};window.nutNextDay=()=>{if(nd<localYmd(new Date())){nd=ndays(nd,1);renderNutrition()}};window.nutToday=()=>{nd=localYmd(new Date());renderNutrition()};window.nutPrevWeek=()=>{nw--;renderNutrition()};window.nutNextWeek=()=>{if(nw<0)nw++;renderNutrition()};
+  window.nutOpenMeal=(id=null)=>{nedit=id;const m=id?nm.find(x=>x.id===id):null;$('nutMTitle').value=m?.title||'';$('nutMTime').value=m?mtime(m):new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});$('nutMCal').value=m?nr(m.calories):'';$('nutMP').value=m?nr(m.protein_g):'';$('nutMC').value=m?nr(m.carbs_g):'';$('nutMF').value=m?nr(m.fat_g):'';$('nutMealDialog').showModal()};
+  $('nutMeals').addEventListener('click',e=>{const b=e.target.closest('[data-na]');if(!b)return;const id=b.closest('[data-id]').dataset.id;if(b.dataset.na==='edit')nutOpenMeal(id);else{nm=nm.filter(m=>m.id!==id);saveN('meals',nm);renderNutrition();toast('Refeição apagada')}});
+  $('nutMealForm').addEventListener('submit',e=>{e.preventDefault();const old=nedit?nm.find(m=>m.id===nedit):null;const row={title:$('nutMTitle').value.trim()||'Refeição',eaten_at:new Date(`${old?mday(old):nd}T${$('nutMTime').value}`).toISOString(),calories:+$('nutMCal').value||0,protein_g:+$('nutMP').value||0,carbs_g:+$('nutMC').value||0,fat_g:+$('nutMF').value||0};if(old)Object.assign(old,row);else nm.push({id:crypto.randomUUID(),...row,foods:[{name:row.title,quantity:'',calories:row.calories,protein_g:row.protein_g,carbs_g:row.carbs_g,fat_g:row.fat_g}],ai_confidence:null});saveN('meals',nm);$('nutMealDialog').close();renderNutrition();toast('Refeição salva ✓')});
+  $('nutMealCancel').onclick=()=>$('nutMealDialog').close();
+  function nutContext(){const g=ng(),recent=nm.slice().sort((a,b)=>new Date(b.eaten_at)-new Date(a.eaten_at)).slice(0,80).map(m=>({id:m.id,eaten_at:m.eaten_at,title:m.title,foods:m.foods,calories:m.calories,protein_g:m.protein_g,carbs_g:m.carbs_g,fat_g:m.fat_g}));const per={};recent.forEach(m=>{const d=m.eaten_at.slice(0,10);per[d]??={kcal:0,p:0,c:0,f:0};per[d].kcal+=+m.calories||0;per[d].p+=+m.protein_g||0;per[d].c+=+m.carbs_g||0;per[d].f+=+m.fat_g||0});return{agora_local:nowLocal(),metas_atuais:g,totais_por_dia:per,refeicoes_recentes:recent,treinos_recentes:typeof logs!=='undefined'?logs.slice(0,8).map(l=>({date:l.date,name:l.name,gym:l.gym,volume:sessionVolume(l)})):[]}}
+  const NSCHEMA={type:'OBJECT',properties:{reply:{type:'STRING'},action:{type:'STRING',enum:['none','add_meal','update_meal','delete_meal','update_goal']},target_meal_id:{type:'STRING',nullable:true},meal:{type:'OBJECT',nullable:true,properties:{title:{type:'STRING'},eaten_at:{type:'STRING'},calories:{type:'NUMBER'},protein_g:{type:'NUMBER'},carbs_g:{type:'NUMBER'},fat_g:{type:'NUMBER'},confidence:{type:'NUMBER'},foods:{type:'ARRAY',items:{type:'OBJECT',properties:{name:{type:'STRING'},quantity:{type:'STRING'},calories:{type:'NUMBER'},protein_g:{type:'NUMBER'},carbs_g:{type:'NUMBER'},fat_g:{type:'NUMBER'}},required:['name','quantity','calories','protein_g','carbs_g','fat_g']}}},required:['title','eaten_at','calories','protein_g','carbs_g','fat_g','confidence','foods']},goal:{type:'OBJECT',nullable:true,properties:{calories:{type:'NUMBER'},protein_g:{type:'NUMBER'},carbs_g:{type:'NUMBER'},fat_g:{type:'NUMBER'}},required:['calories','protein_g','carbs_g','fat_g']}},required:['reply','action','target_meal_id','meal','goal']};
+  const NSYSTEM=`Você é o assistente de alimentação pessoal do app Meu Performance. Você usa a mesma infraestrutura de IA do assistente de treino. Responda em português do Brasil, curto, prático e sem sermão. Você pode registrar, corrigir ou apagar refeições, alterar metas e responder sobre alimentação. Calorias e macros são estimativas; use referências da culinária brasileira e reduza confidence quando houver incerteza. Não dê diagnóstico nem conselho médico. O contexto inclui treino recente para permitir recomendações integradas, mas não invente dados. Se o usuário disser que comeu algo, use action add_meal. Para corrigir uma refeição, use update_meal com o id exato. Para remover, delete_meal. Para mudar metas, update_goal mantendo os campos não mencionados.`;
+  async function structuredGemini(text,img){const key=settings.aiKeyGemini;if(!key)throw new Error('Configure a chave do Gemini em Configurações → Assistente de IA.');const turns=nch.slice(-10).map(m=>({role:m.role,text:m.text,image:m.image}));const contents=turns.map(m=>({role:m.role==='assistant'?'model':'user',parts:[...(m.image?[{inline_data:{mime_type:m.image.media_type,data:m.image.data}}]:[]),{text:m.text}]}));const parts=[{text:text||'Analise a imagem enviada e registre a refeição.'}];if(img)parts.unshift({inline_data:{mime_type:img.media_type,data:img.data}});contents.push({role:'user',parts});
+    const gen={responseMimeType:'application/json',responseSchema:NSCHEMA,temperature:.3};const first=settings.aiModelGemini||'gemini-2.5-flash';async function once(model){const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:NSYSTEM+'\n\nCONTEXTO JSON:\n'+JSON.stringify(nutContext())}]},contents,generationConfig:gen})});const data=await resp.json();if(!resp.ok)return{ok:false,text:data?.error?.message||`Erro ${resp.status}`};const out=data?.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');if(!out)return{ok:false,text:'A IA não retornou conteúdo.'};try{return{ok:true,data:JSON.parse(out)}}catch{return{ok:false,text:'A IA retornou um formato inválido.'}}}
+    let r=await once(first);if(r.ok)return r;if(isModelUnavailableError(r.text)){const ls=await fetchGeminiModels(key);if(ls.ok){for(const model of sortGeminiModels(ls.models)){if(model===first)continue;const r2=await once(model);if(r2.ok){settings.aiModelGemini=model;saveAll();applyAppearance();return r2}}}}throw new Error(r.text)}
+  async function send(){if(nbusy)return;const text=$('nutInput').value.trim();if(!text&&!nattach)return;nbusy=true;const img=nattach;nattach=null;$('nutInput').value='';nch.push({role:'user',text:text||'Foto da refeição',image:img});saveN('chat',nch);renderNChat();try{const r=await structuredGemini(text,img),d=r.data;if(d.action==='add_meal'&&d.meal){nm.push({id:crypto.randomUUID(),...sanitizeMeal(d.meal)})}else if(d.action==='update_meal'&&d.meal){const m=nm.find(x=>x.id===d.target_meal_id);if(m)Object.assign(m,sanitizeMeal(d.meal))}else if(d.action==='delete_meal'){nm=nm.filter(x=>x.id!==d.target_meal_id)}else if(d.action==='update_goal'&&d.goal){np={...np,calorie_goal:Math.max(500,Math.min(10000,+d.goal.calories||ng().cal)),protein_goal_g:Math.max(0,+d.goal.protein_g||ng().p),carb_goal_g:Math.max(0,+d.goal.carbs_g||ng().c),fat_goal_g:Math.max(0,+d.goal.fat_g||ng().f)};saveN('profile',np)}nch.push({role:'assistant',text:d.reply||'Pronto.'});saveN('meals',nm);saveN('chat',nch);renderNutrition();}catch(e){nch.push({role:'assistant',text:'Não consegui falar com a IA: '+e.message});saveN('chat',nch);renderNChat()}finally{nBusy=false}}
+  function sanitizeMeal(m){const clamp=(v,max)=>Math.max(0,Math.min(max,Number(v)||0));return{eaten_at:isNaN(new Date(m.eaten_at))?new Date().toISOString():new Date(m.eaten_at).toISOString(),title:String(m.title||'Refeição').slice(0,80),foods:(m.foods||[]).map(f=>({name:String(f.name||'Alimento').slice(0,80),quantity:String(f.quantity||'').slice(0,40),calories:clamp(f.calories,5000),protein_g:clamp(f.protein_g,500),carbs_g:clamp(f.carbs_g,800),fat_g:clamp(f.fat_g,500)})),calories:clamp(m.calories,10000),protein_g:clamp(m.protein_g,1000),carbs_g:clamp(m.carbs_g,1500),fat_g:clamp(m.fat_g,1000),ai_confidence:Math.max(0,Math.min(1,Number(m.confidence)||0))}}
+  window.nutSend=send;
+  $('nutChips').addEventListener('click',e=>{const b=e.target.closest('button');if(b){$('nutInput').value=b.textContent;$('nutInput').focus()}});$('nutInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+  $('nutPhoto').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const img=new Image(),url=URL.createObjectURL(f);img.onload=()=>{let w=img.width,h=img.height,max=900;if(w>h&&w>max){h=Math.round(h*max/w);w=max}else if(h>=w&&h>max){w=Math.round(w*max/h);h=max}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);nattach={media_type:'image/jpeg',data:c.toDataURL('image/jpeg',.72).split(',')[1]};URL.revokeObjectURL(url);toast('Foto pronta — envie para a IA')} ;img.src=url}catch{toast('Não consegui ler a imagem')}});
+  // migração do diário antigo
+  if(!localStorage.getItem(NKEY+'.meals')){try{const old=JSON.parse(localStorage.getItem('diario.meals')||'null');if(Array.isArray(old)){nm=old;saveN('meals',nm)}}catch{}}
+  if(!localStorage.getItem(NKEY+'.profile')){try{const old=JSON.parse(localStorage.getItem('diario.profile')||'null');if(old){np={...NP_DEFAULT,...old};saveN('profile',np)}}catch{}}
+  window.renderNutrition=renderNutrition; renderNutrition();
+})();
+
+
+function downloadTextFile(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function csvQ(v){return '"'+String(v??'').replace(/"/g,'""')+'"'}
+function exportNutritionCsv(){const meals=JSON.parse(localStorage.getItem('mp_nutrition_v1.meals')||'[]').sort((a,b)=>new Date(a.eaten_at)-new Date(b.eaten_at));const rows=meals.map(m=>[m.eaten_at,m.title,m.calories,m.protein_g,m.carbs_g,m.fat_g,(m.foods||[]).map(f=>`${f.name} ${f.quantity||''}`.trim()).join('; ')].map(csvQ).join(','));downloadTextFile(`alimentacao-${new Date().toISOString().slice(0,10)}.csv`,'data,hora,refeicao,kcal,proteina_g,carbo_g,gordura_g,alimentos\n'+rows.join('\n'),'text/csv;charset=utf-8')}
+function exportTrainingCsv(){const rows=logs.flatMap(l=>(l.rows||[]).map(r=>[l.date,l.name,l.gym||'',l.rating||'',r.exercise,r.kg,r.reps,r.rir,r.done].map(csvQ).join(',')));downloadTextFile(`treinos-${new Date().toISOString().slice(0,10)}.csv`,'data,sessao,academia,nota,exercicio,carga,reps,rir,feito\n'+rows.join('\n'),'text/csv;charset=utf-8')}
+
+function exportUnifiedData(){
+  const payload={format:'meu-performance',version:1,exported_at:new Date().toISOString(),note:'Chaves de API são deliberadamente omitidas.',training:{plan,logs,settings:{...settings,aiKeyGemini:'',aiKeyAnthropic:''}},nutrition:{profile:JSON.parse(localStorage.getItem('mp_nutrition_v1.profile')||'null'),meals:JSON.parse(localStorage.getItem('mp_nutrition_v1.meals')||'[]'),chat:JSON.parse(localStorage.getItem('mp_nutrition_v1.chat')||'[]')}};
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download=`meu-performance-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
+}
+document.getElementById('unifiedImport').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const d=JSON.parse(await f.text());if(!d||d.format!=='meu-performance')throw new Error('Formato');if(d.training){if(Array.isArray(d.training.plan))plan=d.training.plan;if(Array.isArray(d.training.logs))logs=d.training.logs;if(d.training.settings)settings={...settings,...d.training.settings,aiKeyGemini:settings.aiKeyGemini,aiKeyAnthropic:settings.aiKeyAnthropic};saveAll()}if(d.nutrition){if(d.nutrition.profile)localStorage.setItem('mp_nutrition_v1.profile',JSON.stringify(d.nutrition.profile));if(Array.isArray(d.nutrition.meals))localStorage.setItem('mp_nutrition_v1.meals',JSON.stringify(d.nutrition.meals));if(Array.isArray(d.nutrition.chat))localStorage.setItem('mp_nutrition_v1.chat',JSON.stringify(d.nutrition.chat))}location.reload()}catch{toast('Backup integrado inválido.')}});
+</script>
+<dialog id="nutMealDialog" class="nut-dialog"><form method="dialog" id="nutMealForm"><h2>Refeição</h2><div class="nut-form-grid"><label>Nome<input id="nutMTitle" required></label><label>Horário<input id="nutMTime" type="time" required></label><label>Calorias<input id="nutMCal" type="number" min="0" required></label><label>Proteína (g)<input id="nutMP" type="number" min="0" step=".1"></label><label>Carboidratos (g)<input id="nutMC" type="number" min="0" step=".1"></label><label>Gorduras (g)<input id="nutMF" type="number" min="0" step=".1"></label></div><div class="actions" style="margin-top:12px"><button type="button" id="nutMealCancel">Cancelar</button><button type="submit" class="primary">Salvar</button></div></form></dialog>
 </body>
 </html>
